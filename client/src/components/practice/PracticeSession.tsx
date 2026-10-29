@@ -16,6 +16,7 @@ import {
   recordPracticeResult,
   type PracticeSource,
 } from '../../utils/lessonProgress'
+import { useCelebration } from '../../context/CelebrationContext'
 import { CodeEditor } from '../editor/CodeEditor'
 import './PracticeSession.css'
 
@@ -735,6 +736,8 @@ function PracticeSummary({
   onExit: () => void
   onNewSet?: () => void
 }) {
+  const { showCelebration } = useCelebration()
+  const perfectFiredRef = useRef(false)
   const correct = results.filter((r) => r.correct).length
   const timedOutCount = results.filter((r) => r.timedOut).length
   const score = results.length ? Math.round((correct / results.length) * 100) : 0
@@ -750,6 +753,16 @@ function PracticeSummary({
       return acc
     }, {}),
   )
+
+  useEffect(() => {
+    if (score !== 100 || results.length === 0 || perfectFiredRef.current) return
+    perfectFiredRef.current = true
+    showCelebration({
+      icon: '🥇',
+      title: 'Perfect score!',
+      message: '100% — every question correct. Gold-star run!',
+    })
+  }, [score, results.length, showCelebration])
 
   return (
     <div className="ps-card ps-summary">

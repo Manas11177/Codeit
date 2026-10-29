@@ -118,6 +118,18 @@ export function setProgressUserId(userId: string | null) {
   window.dispatchEvent(new CustomEvent(STATS_UPDATED_EVENT))
 }
 
+export function getProgressUserId() {
+  return activeUserId
+}
+
+export type AchievementTier = 'bronze' | 'silver' | 'gold'
+
+export const MEDAL_EMOJI: Record<AchievementTier, string> = {
+  bronze: '🥉',
+  silver: '🥈',
+  gold: '🥇',
+}
+
 export function getTotalSubtopicCount() {
   return LESSON_DATA.reduce((sum, lesson) => sum + lesson.subtopics.length, 0)
 }
@@ -171,6 +183,7 @@ export type AchievementDef = {
   title: string
   description: string
   icon: string
+  tier: AchievementTier
   check: (ctx: AchievementContext) => boolean
 }
 
@@ -189,6 +202,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     title: 'First Step',
     description: 'Complete your first lesson topic.',
     icon: '🌱',
+    tier: 'bronze',
     check: (ctx) => ctx.completedTopics >= 1,
   },
   {
@@ -196,6 +210,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     title: 'Getting Warm',
     description: 'Complete 5 lesson topics.',
     icon: '✨',
+    tier: 'bronze',
     check: (ctx) => ctx.completedTopics >= 5,
   },
   {
@@ -203,6 +218,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     title: 'On a Roll',
     description: 'Complete 10 lesson topics.',
     icon: '🔥',
+    tier: 'silver',
     check: (ctx) => ctx.completedTopics >= 10,
   },
   {
@@ -210,6 +226,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     title: 'Lesson Cleared',
     description: 'Finish every topic in one full lesson.',
     icon: '📘',
+    tier: 'silver',
     check: (ctx) => ctx.completedLessons >= 1,
   },
   {
@@ -217,6 +234,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     title: 'Python Explorer',
     description: 'Finish 3 complete lessons.',
     icon: '🧭',
+    tier: 'gold',
     check: (ctx) => ctx.completedLessons >= 3,
   },
   {
@@ -224,6 +242,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     title: '3-Day Streak',
     description: 'Learn on 3 days in a row.',
     icon: '⚡',
+    tier: 'bronze',
     check: (ctx) => ctx.streak >= 3,
   },
   {
@@ -231,6 +250,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     title: 'Week Warrior',
     description: 'Keep a 7-day learning streak.',
     icon: '🏅',
+    tier: 'silver',
     check: (ctx) => ctx.streak >= 7,
   },
   {
@@ -238,6 +258,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     title: 'Halfway Hero',
     description: 'Reach 50% overall progress.',
     icon: '🎯',
+    tier: 'silver',
     check: (ctx) => ctx.progressPct >= 50,
   },
   {
@@ -245,6 +266,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     title: 'Code Builder',
     description: 'Complete 25 lesson topics.',
     icon: '🛠️',
+    tier: 'gold',
     check: (ctx) => ctx.completedTopics >= 25,
   },
   {
@@ -252,6 +274,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     title: 'Course Champion',
     description: 'Finish all 8 Python lessons.',
     icon: '🏆',
+    tier: 'gold',
     check: (ctx) => ctx.completedLessons >= ctx.totalLessons,
   },
   {
@@ -259,6 +282,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     title: 'Python Graduate',
     description: 'Complete every topic in the curriculum.',
     icon: '🎓',
+    tier: 'gold',
     check: (ctx) => ctx.completedTopics >= ctx.totalTopics,
   },
   {
@@ -266,6 +290,7 @@ const ACHIEVEMENT_DEFS: AchievementDef[] = [
     title: 'Dedicated Learner',
     description: 'Maintain a 14-day streak.',
     icon: '💎',
+    tier: 'gold',
     check: (ctx) => ctx.streak >= 14,
   },
 ]

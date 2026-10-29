@@ -2,12 +2,32 @@ import { useEffect, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useUserStats } from "../hooks/useUserStats";
 import { supabase } from "../lib/supabase";
+import {
+  MEDAL_EMOJI,
+  STATS_UPDATED_EVENT,
+  getAchievements,
+  type Achievement,
+} from "../utils/lessonProgress";
 import { goTo, requireAuth } from "../utils/navigation";
 
 function Dashboard() {
   const { darkMode, toggleTheme } = useTheme();
   const stats = useUserStats();
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [achievements, setAchievements] = useState<Achievement[]>(() =>
+    getAchievements(),
+  );
+
+  useEffect(() => {
+    function refreshAchievements() {
+      setAchievements(getAchievements());
+    }
+    window.addEventListener(STATS_UPDATED_EVENT, refreshAchievements);
+    return () =>
+      window.removeEventListener(STATS_UPDATED_EVENT, refreshAchievements);
+  }, []);
+
+  const unlockedMedals = achievements.filter((item) => item.unlocked);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -373,6 +393,33 @@ function Dashboard() {
                 >
                   of {stats.achievementsTotal} badges
                 </p>
+
+                {unlockedMedals.length > 0 ? (
+                  <ul className="mt-3 flex flex-wrap gap-2">
+                    {unlockedMedals.map((item) => (
+                      <li
+                        key={item.id}
+                        title={`${item.title} · ${item.tier}`}
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs ${
+                          darkMode
+                            ? "bg-white/10 text-white/85"
+                            : "bg-slate-900/5 text-slate-800"
+                        }`}
+                      >
+                        <span aria-hidden="true">{MEDAL_EMOJI[item.tier]}</span>
+                        <span>{item.title}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p
+                    className={`mt-3 text-xs ${
+                      darkMode ? "text-white/40" : "text-slate-500"
+                    }`}
+                  >
+                    Complete a topic to earn your first medal.
+                  </p>
+                )}
               </div>
             </div>
           </section>

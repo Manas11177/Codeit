@@ -134,6 +134,56 @@
   font-weight: 500;
 }
 
+.ps-timer {
+  margin: 0 0 1.1rem;
+}
+
+.ps-timer__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+.ps-timer__row strong {
+  font-variant-numeric: tabular-nums;
+  color: #e5e7eb;
+  font-size: 14px;
+}
+
+.ps-timer__track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.ps-timer__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: #00a99d;
+  transition: width 0.25s linear, background-color 0.2s ease;
+}
+
+.ps-timer.is-amber .ps-timer__fill {
+  background: #fbbf24;
+}
+
+.ps-timer.is-amber .ps-timer__row strong {
+  color: #fcd34d;
+}
+
+.ps-timer.is-red .ps-timer__fill {
+  background: #f87171;
+}
+
+.ps-timer.is-red .ps-timer__row strong {
+  color: #fca5a5;
+}
+
 .ps-prompt {
   white-space: pre-line;
   font-size: 1.08rem;

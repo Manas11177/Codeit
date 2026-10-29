@@ -8,6 +8,8 @@ import {
   FillView,
   McqView,
   OrderView,
+  QUESTION_TIME_LIMITS,
+  QuestionTimer,
 } from '../components/practice/PracticeSession'
 import { getConceptExplainer } from '../data/lessonExplanations'
 import { getSubtopicExercise } from '../data/subtopicContent'
@@ -158,6 +160,7 @@ export function SubtopicSession({
   const [direction, setDirection] = useState<'forward' | 'back'>('forward')
   const [learnDone, setLearnDone] = useState(reviewMode)
   const [answers, setAnswers] = useState<Partial<Record<WarmupKind, WarmupResult>>>({})
+  const [warmupTimedOut, setWarmupTimedOut] = useState<Partial<Record<WarmupKind, boolean>>>({})
 
   const page = pages[pageIndex]
   const lessonLabel = `${lessonIndex + 1}.${subtopicIndex + 1}`
@@ -304,11 +307,35 @@ export function SubtopicSession({
   }
 
   function renderWarmup(kind: WarmupKind, question: PracticeQuestion) {
+    const settled = answers[kind] === 'correct' || answers[kind] === 'wrong'
+    const timedOut = Boolean(warmupTimedOut[kind])
     const onAnswer = (correct: boolean) => handleWarmupAnswer(kind, question, correct)
-    if (question.kind === 'mcq') return <McqView question={question} onAnswer={onAnswer} />
-    if (question.kind === 'fill') return <FillView question={question} onAnswer={onAnswer} />
-    if (question.kind === 'order') return <OrderView question={question} onAnswer={onAnswer} />
-    return null
+    const onTimeout = () => {
+      setWarmupTimedOut((prev) => ({ ...prev, [kind]: true }))
+      handleWarmupAnswer(kind, question, false)
+    }
+
+    const view =
+      question.kind === 'mcq' ? (
+        <McqView question={question} onAnswer={onAnswer} timedOut={timedOut} />
+      ) : question.kind === 'fill' ? (
+        <FillView question={question} onAnswer={onAnswer} timedOut={timedOut} />
+      ) : question.kind === 'order' ? (
+        <OrderView question={question} onAnswer={onAnswer} timedOut={timedOut} />
+      ) : null
+
+    if (!view) return null
+
+    return (
+      <div key={question.id}>
+        <QuestionTimer
+          totalSeconds={QUESTION_TIME_LIMITS[kind][question.difficulty]}
+          paused={settled}
+          onTimeout={onTimeout}
+        />
+        {view}
+      </div>
+    )
   }
 
   const meta = PAGE_META[page]

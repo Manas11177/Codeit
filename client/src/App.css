@@ -26,33 +26,11 @@ body,
   position: relative;
   width: 100%;
   height: 100vh;
-  overflow: hidden;
-  background: #2c180f;
-}
-
-.lessons-carousel-shell::before {
-  content: '';
-  position: absolute;
-  inset: -10%;
-  background: radial-gradient(
-    ellipse 70% 60% at 46% 48%,
-    #3d2214 0%,
-    #2c180f 55%,
-    #200f08 100%
-  );
-  pointer-events: none;
-}
-
-.lessons-carousel-shell::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse 80% 70% at 50% 50%,
-    transparent 40%,
-    rgba(18, 8, 4, 0.55) 100%
-  );
-  pointer-events: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 45%, #0c0e16 0%, #05060a 70%),
+    #05060a;
 }
 
 .lessons-carousel-viewport {
@@ -79,4 +57,9 @@ body,
 .lessons-home-link:hover {
   border-color: #00a99d;
   color: #00a99d;
+}
+
+.lessons-progress-link {
+  left: auto;
+  right: 1.25rem;
 }

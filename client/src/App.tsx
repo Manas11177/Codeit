@@ -7,6 +7,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import { Lessons } from './pages/Lessons'
 import { VirtualEditor } from './pages/VirtualEditor'
+import { ProgressTracker } from './pages/ProgressTracker'
 import { supabase } from './lib/supabase'
 import {
   goTo,
@@ -22,6 +23,7 @@ type AppPage =
   | 'signup'
   | 'lessons'
   | 'virtual-editor'
+  | 'progress'
 
 function getCurrentPage(): AppPage {
   const path = window.location.pathname
@@ -30,6 +32,7 @@ function getCurrentPage(): AppPage {
   if (path === '/signup') return 'signup'
   if (path === '/lessons') return 'lessons'
   if (path === '/virtual-editor') return 'virtual-editor'
+  if (path === '/progress') return 'progress'
   if (path === '/' || path === '/dashboard') return 'dashboard'
 
   return 'dashboard'
@@ -91,7 +94,9 @@ export default function App() {
   }, [guardProtectedRoute])
 
   const protectedPage =
-    currentPage === 'lessons' || currentPage === 'virtual-editor'
+    currentPage === 'lessons' ||
+    currentPage === 'virtual-editor' ||
+    currentPage === 'progress'
 
   const showAppNavigation =
     currentPage === 'virtual-editor' &&
@@ -119,6 +124,7 @@ export default function App() {
     if (currentPage === 'signup') return <Signup />
     if (currentPage === 'virtual-editor') return <VirtualEditor />
     if (currentPage === 'lessons') return <Lessons />
+    if (currentPage === 'progress') return <ProgressTracker />
     return <Dashboard />
   }
 

@@ -26,6 +26,7 @@ function Dashboard() {
   const goToLogin = () => goTo("/login");
   const goToLessons = () => void requireAuth("/lessons");
   const goToEditor = () => void requireAuth("/virtual-editor");
+  const goToProgress = () => void requireAuth("/progress");
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -116,11 +117,7 @@ function Dashboard() {
 
             <button
               type="button"
-              onClick={() =>
-                document
-                  .getElementById("progress")
-                  ?.scrollIntoView({ behavior: "smooth" })
-              }
+              onClick={goToProgress}
               className="transition-colors hover:text-blue-600"
             >
               Progress
@@ -502,6 +499,16 @@ function Dashboard() {
                   >
                     You're {stats.progressPct}% through your learning journey ({stats.topicsCompleted}/{stats.topicsTotal} topics).
                   </p>
+
+                  <button
+                    type="button"
+                    onClick={goToProgress}
+                    className={`liquid-glass mt-5 rounded-full px-5 py-2.5 text-sm transition duration-300 hover:scale-105 ${
+                      darkMode ? "text-white" : "text-slate-900"
+                    }`}
+                  >
+                    Open Progress Tracker & Personalized Training →
+                  </button>
                 </div>
 
                 <p

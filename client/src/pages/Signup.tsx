@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import './Auth.css'
 
@@ -65,7 +65,7 @@ export default function Signup() {
             className="auth-back"
             onClick={() => goTo('/')}
           >
-            ΓåÉ Back
+            ← Back
           </button>
 
           <div className="auth-brand">

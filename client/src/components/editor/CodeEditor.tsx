@@ -21,12 +21,15 @@ export function CodeEditor({
     if (!blockClipboard) return
 
     const block = () => undefined
+    // Monaco shares keybindings between editors, so the block must be tied to this editor's context key.
+    const context = `clipboardBlocked_${editor.getId().replace(/\W/g, '_')}`
+    editor.createContextKey(context, true)
 
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, block)
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyC, block)
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyX, block)
-    editor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.Insert, block)
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Insert, block)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyV, block, context)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyC, block, context)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyX, block, context)
+    editor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.Insert, block, context)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Insert, block, context)
 
     editor.onDidPaste(() => {
       editor.trigger('keyboard', 'undo', null)

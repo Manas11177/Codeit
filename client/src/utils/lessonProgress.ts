@@ -5,10 +5,64 @@ export const STATS_UPDATED_EVENT = 'codementor-stats-updated'
 
 const LEGACY_KEY = 'codementor-lesson-progress'
 
+export type ErrorCategory =
+  | 'SyntaxError'
+  | 'IndentationError'
+  | 'NameError'
+  | 'TypeError'
+  | 'ValueError'
+  | 'ZeroDivisionError'
+  | 'IndexError'
+  | 'KeyError'
+  | 'AttributeError'
+  | 'WrongOutput'
+  | 'OtherError'
+
+export type TopicPerformance = {
+  lessonId: string
+  subtopic: string
+  hintsUsed: number
+  sawAnswer: boolean
+  runs: number
+  checks: number
+  failedChecks: number
+  errors: Partial<Record<ErrorCategory, number>>
+  solved: boolean
+  firstActivityAt: string
+  lastActivityAt: string
+  solvedAt?: string
+}
+
+export type ActivityKind = 'mcq' | 'fill' | 'order' | 'code'
+export type Difficulty = 'easy' | 'medium' | 'hard'
+export type PracticeSource = 'chapter-quiz' | 'training' | 'lesson'
+
+export type PracticeRecord = {
+  questionId: string
+  lessonId: string
+  subtopic: string
+  kind: ActivityKind
+  difficulty: Difficulty
+  correct: boolean
+  usedHint: boolean
+  source: PracticeSource
+  at: string
+}
+
+export type WarmupHistory = {
+  attempt: number
+  recent: string[]
+}
+
 type ProgressStore = {
   completed: Record<string, string[]>
   activityDates: string[]
+  performance: Record<string, TopicPerformance>
+  practice: PracticeRecord[]
+  warmups: Record<string, WarmupHistory>
 }
+
+const MAX_PRACTICE_RECORDS = 600
 
 let activeUserId: string | null = null
 
@@ -17,17 +71,20 @@ function storageKey(userId: string | null) {
 }
 
 function emptyStore(): ProgressStore {
-  return { completed: {}, activityDates: [] }
+  return { completed: {}, activityDates: [], performance: {}, practice: [], warmups: {} }
 }
 
 function readStore(): ProgressStore {
   try {
     const raw = localStorage.getItem(storageKey(activeUserId))
     if (!raw) return emptyStore()
-    const parsed = JSON.parse(raw) as ProgressStore
+    const parsed = JSON.parse(raw) as Partial<ProgressStore>
     return {
       completed: parsed.completed ?? {},
       activityDates: parsed.activityDates ?? [],
+      performance: parsed.performance ?? {},
+      practice: parsed.practice ?? [],
+      warmups: parsed.warmups ?? {},
     }
   } catch {
     return emptyStore()
@@ -257,6 +314,120 @@ export function getDashboardStats() {
     achievementsUnlocked: getUnlockedAchievementCount(),
     achievementsTotal: ACHIEVEMENT_DEFS.length,
   }
+}
+
+export function topicKey(lessonId: string, subtopic: string) {
+  return `${lessonId}:${subtopic}`
+}
+
+function ensurePerformance(
+  store: ProgressStore,
+  lessonId: string,
+  subtopic: string,
+): TopicPerformance {
+  const key = topicKey(lessonId, subtopic)
+  const now = new Date().toISOString()
+  const existing = store.performance[key]
+  if (existing) {
+    existing.lastActivityAt = now
+    return existing
+  }
+  const created: TopicPerformance = {
+    lessonId,
+    subtopic,
+    hintsUsed: 0,
+    sawAnswer: false,
+    runs: 0,
+    checks: 0,
+    failedChecks: 0,
+    errors: {},
+    solved: false,
+    firstActivityAt: now,
+    lastActivityAt: now,
+  }
+  store.performance[key] = created
+  return created
+}
+
+function countError(perf: TopicPerformance, category: ErrorCategory | null) {
+  if (!category) return
+  perf.errors[category] = (perf.errors[category] ?? 0) + 1
+}
+
+export function recordHintUsed(
+  lessonId: string,
+  subtopic: string,
+  level: number,
+) {
+  const store = readStore()
+  const perf = ensurePerformance(store, lessonId, subtopic)
+  perf.hintsUsed = Math.max(perf.hintsUsed, level)
+  if (level >= 4) perf.sawAnswer = true
+  writeStore(store)
+}
+
+export function recordCodeRun(
+  lessonId: string,
+  subtopic: string,
+  errorCategory: ErrorCategory | null,
+) {
+  const store = readStore()
+  const perf = ensurePerformance(store, lessonId, subtopic)
+  perf.runs += 1
+  countError(perf, errorCategory)
+  writeStore(store)
+}
+
+export function recordSolutionCheck(
+  lessonId: string,
+  subtopic: string,
+  passed: boolean,
+  errorCategory: ErrorCategory | null,
+) {
+  const store = readStore()
+  const perf = ensurePerformance(store, lessonId, subtopic)
+  perf.checks += 1
+  if (passed) {
+    if (!perf.solved) perf.solvedAt = new Date().toISOString()
+    perf.solved = true
+  } else {
+    perf.failedChecks += 1
+    countError(perf, errorCategory)
+  }
+  writeStore(store)
+}
+
+export function recordPracticeResult(record: Omit<PracticeRecord, 'at'>) {
+  const store = readStore()
+  store.practice = [
+    ...store.practice,
+    { ...record, at: new Date().toISOString() },
+  ].slice(-MAX_PRACTICE_RECORDS)
+  writeStore(store)
+}
+
+export function getAllPerformance(): Record<string, TopicPerformance> {
+  return readStore().performance
+}
+
+export function getPracticeHistory(): PracticeRecord[] {
+  return readStore().practice
+}
+
+export function getWarmupHistory(lessonId: string, subtopic: string): WarmupHistory {
+  return readStore().warmups[topicKey(lessonId, subtopic)] ?? { attempt: 0, recent: [] }
+}
+
+export function saveWarmupVisit(lessonId: string, subtopic: string, shownIds: string[]) {
+  const store = readStore()
+  const key = topicKey(lessonId, subtopic)
+  const previous = store.warmups[key] ?? { attempt: 0, recent: [] }
+  store.warmups[key] = { attempt: previous.attempt + 1, recent: shownIds }
+  writeStore(store)
+}
+
+export function getActivityDates(): string[] {
+  return readStore().activityDates
 }
 
 export function markSubtopicComplete(lessonId: string, subtopic: string) {

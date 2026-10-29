@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { consumeAuthRedirect, goTo } from '../utils/navigation'
 import './Auth.css'
@@ -43,7 +43,7 @@ export default function Login() {
             className="auth-back"
             onClick={() => goTo('/')}
           >
-            ΓåÉ Back
+            ← Back
           </button>
 
           <div className="auth-brand">

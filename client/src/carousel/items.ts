@@ -7,6 +7,8 @@ export type CarouselItem = {
   exercises: number;
   progress: number;
   color: string;
+  image: string;
+  snippet: string[];
 };
 
 /** Static carousel metadata — progress is filled in at runtime from user stats. */
@@ -19,6 +21,8 @@ export const CAROUSEL_META: Omit<CarouselItem, 'progress'>[] = [
     level: "Beginner",
     exercises: 8,
     color: "#00A99D",
+    image: "/lessons/python-basics.jpg?v=2",
+    snippet: ["# your first program", "print(\"Hello, World!\")"],
   },
   {
     id: "variables",
@@ -28,6 +32,8 @@ export const CAROUSEL_META: Omit<CarouselItem, 'progress'>[] = [
     level: "Beginner",
     exercises: 9,
     color: "#2563EB",
+    image: "/lessons/variables.jpg?v=2",
+    snippet: ["name = \"Ada\"", "age = 12"],
   },
   {
     id: "operators",
@@ -37,6 +43,8 @@ export const CAROUSEL_META: Omit<CarouselItem, 'progress'>[] = [
     level: "Beginner",
     exercises: 9,
     color: "#7C3AED",
+    image: "/lessons/operators.jpg?v=2",
+    snippet: ["total = 7 + 3", "print(total >= 10)"],
   },
   {
     id: "conditions",
@@ -46,6 +54,8 @@ export const CAROUSEL_META: Omit<CarouselItem, 'progress'>[] = [
     level: "Beginner",
     exercises: 7,
     color: "#E11D48",
+    image: "/lessons/conditions.jpg?v=2",
+    snippet: ["if score >= 50:", "    print(\"Pass\")"],
   },
   {
     id: "loops",
@@ -55,6 +65,8 @@ export const CAROUSEL_META: Omit<CarouselItem, 'progress'>[] = [
     level: "Beginner",
     exercises: 8,
     color: "#EA580C",
+    image: "/lessons/loops.jpg?v=2",
+    snippet: ["for i in range(3):", "    print(i)"],
   },
   {
     id: "functions",
@@ -64,6 +76,8 @@ export const CAROUSEL_META: Omit<CarouselItem, 'progress'>[] = [
     level: "Intermediate",
     exercises: 8,
     color: "#0891B2",
+    image: "/lessons/functions.jpg?v=2",
+    snippet: ["def greet(name):", "    return \"Hi \" + name"],
   },
   {
     id: "lists",
@@ -73,6 +87,8 @@ export const CAROUSEL_META: Omit<CarouselItem, 'progress'>[] = [
     level: "Intermediate",
     exercises: 9,
     color: "#16A34A",
+    image: "/lessons/lists.jpg?v=2",
+    snippet: ["fruits = [\"apple\", \"kiwi\"]", "fruits.append(\"mango\")"],
   },
   {
     id: "dictionaries",
@@ -82,6 +98,8 @@ export const CAROUSEL_META: Omit<CarouselItem, 'progress'>[] = [
     level: "Intermediate",
     exercises: 9,
     color: "#CA8A04",
+    image: "/lessons/dictionaries.jpg?v=2",
+    snippet: ["user = {\"name\": \"Ada\"}", "print(user[\"name\"])"],
   },
 ];
 

@@ -119,6 +119,105 @@
    TOPICS
    ========================================= */
 
+.chapter-quiz {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  max-width: 900px;
+  box-sizing: border-box;
+  margin: -15px 0 40px;
+  padding: 1.4rem 1.6rem;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 169, 157, 0.4);
+  background: linear-gradient(135deg, rgba(0, 169, 157, 0.12), rgba(124, 58, 237, 0.08));
+  animation: chapter-quiz-in 0.4s ease;
+}
+
+.chapter-quiz.is-compact {
+  padding: 1rem 1.3rem;
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+@keyframes chapter-quiz-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chapter-quiz__text {
+  flex: 1 1 320px;
+}
+
+.chapter-quiz__eyebrow {
+  color: #5eead4;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.chapter-quiz h3 {
+  margin: 0.4rem 0 0.35rem;
+  font-size: 20px;
+}
+
+.chapter-quiz p {
+  margin: 0.3rem 0 0;
+  color: #cbd5e1;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.chapter-quiz small {
+  display: block;
+  margin-top: 0.5rem;
+  color: #9ca3af;
+}
+
+.chapter-quiz__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chapter-quiz__actions button {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e5e7eb;
+  border-radius: 999px;
+  padding: 0.55rem 1.1rem;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    background 0.2s;
+}
+
+.chapter-quiz__actions button:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.chapter-quiz__actions .chapter-quiz__primary {
+  border-color: transparent;
+  background: linear-gradient(135deg, #00a99d, #0ea5e9);
+  color: #fff;
+}
+
+.chapter-quiz__actions .chapter-quiz__primary:hover {
+  background: linear-gradient(135deg, #00b8ab, #22b3f0);
+}
+
 .subtopics-container {
   width: 100%;
   max-width: 900px;

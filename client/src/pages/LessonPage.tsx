@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { LESSON_DATA } from '../carousel/lessonData'
 import { PracticeSession } from '../components/practice/PracticeSession'
 import { getLearningInsights } from '../learning/adaptiveEngine'
-import { buildPracticeSet, type PracticeQuestion } from '../learning/questionGenerator'
+import { buildChapterQuiz, type PracticeQuestion } from '../learning/questionGenerator'
 import {
   consumeStartSubtopic,
   getCompletedSubtopics,
@@ -40,19 +40,12 @@ export function LessonPage({ lessonId, onBack }: LessonPageProps) {
       (r) => r.source === 'chapter-quiz' && r.lessonId === lessonId,
     )
     if (records.length === 0) return null
-    const recent = records.slice(-6)
+    const recent = records.slice(-7)
     return { correct: recent.filter((r) => r.correct).length, total: recent.length }
   }, [lessonId, progressTick])
 
   function startQuiz() {
-    const questions = buildPracticeSet({
-      insights: getLearningInsights(),
-      source: 'chapter-quiz',
-      lessonId,
-      kinds: ['mcq'],
-      count: 6,
-      seed: Date.now(),
-    })
+    const questions = buildChapterQuiz(getLearningInsights(), lessonId, Date.now())
     setQuiz({ questions, nonce: Date.now() })
     window.scrollTo({ top: 0 })
   }
@@ -166,9 +159,9 @@ export function LessonPage({ lessonId, onBack }: LessonPageProps) {
               <>
                 <h3>Want a quick personalized quiz?</h3>
                 <p>
-                  Six multiple-choice questions focused on the topics where you
-                  needed hints or made mistakes. It's completely optional — skip
-                  it and it won't affect your progress.
+                  Seven questions — multiple choice, fill-in-the-blank, and arrange —
+                  focused on the topics where you needed hints or made mistakes.
+                  It's completely optional — skip it and it won't affect your progress.
                 </p>
               </>
             )}

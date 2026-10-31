@@ -166,6 +166,7 @@ export function PracticeSession({
         {finished ? (
           <PracticeSummary
             results={results}
+            source={source}
             onExit={onExit}
             onNewSet={onNewSet}
           />
@@ -531,7 +532,10 @@ export function OrderView({
   onAnswer: AnswerHandler
   timedOut?: boolean
 }) {
+  const solutionIndices = new Set(question.blocks.flat())
+  const hasDistractors = question.lines.some((_, index) => !solutionIndices.has(index))
   const [order, setOrder] = useState<number[]>(question.shuffledOrder)
+  const [unused, setUnused] = useState<number[]>([])
   const [result, setResult] = useState<boolean | null>(null)
   const done = result !== null || timedOut
 
@@ -544,6 +548,20 @@ export function OrderView({
       ;[next[position], next[target]] = [next[target], next[position]]
       return next
     })
+  }
+
+  function leaveOut(position: number) {
+    if (done) return
+    const lineIndex = order[position]
+    setOrder((prev) => prev.filter((_, index) => index !== position))
+    setUnused((prev) => [...prev, lineIndex])
+  }
+
+  function useLine(unusedPosition: number) {
+    if (done) return
+    const lineIndex = unused[unusedPosition]
+    setUnused((prev) => prev.filter((_, index) => index !== unusedPosition))
+    setOrder((prev) => [...prev, lineIndex])
   }
 
   function check() {
@@ -578,14 +596,54 @@ export function OrderView({
               >
                 ↓
               </button>
+              {hasDistractors ? (
+                <button
+                  type="button"
+                  className="ps-order__leave"
+                  onClick={() => leaveOut(position)}
+                  disabled={done}
+                  aria-label="Leave this line out"
+                >
+                  Leave out
+                </button>
+              ) : null}
             </div>
           </li>
         ))}
       </ol>
+      {hasDistractors ? (
+        <div className="ps-order-unused">
+          <p className="ps-order-unused__label">Not part of the answer</p>
+          {unused.length === 0 ? (
+            <p className="ps-subtle">Nothing left out yet.</p>
+          ) : (
+            <ul className="ps-order">
+              {unused.map((lineIndex, position) => (
+                <li key={lineIndex} className="ps-order__item">
+                  <pre>{question.lines[lineIndex]}</pre>
+                  <div className="ps-order__controls">
+                    <button
+                      type="button"
+                      className="ps-order__leave"
+                      onClick={() => useLine(position)}
+                      disabled={done}
+                      aria-label="Put this line back into the answer"
+                    >
+                      Use
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
       <p className="ps-subtle">
-        {question.mode === 'pieces'
-          ? 'Read the pieces from top to bottom — together they make the code. Use ↑ and ↓ to move them.'
-          : 'Indentation is kept to help you spot which lines belong inside a block.'}
+        {hasDistractors
+          ? 'Keep only the lines that belong, in the order they run. Move the others into “Not part of the answer”.'
+          : question.mode === 'pieces'
+            ? 'Read the pieces from top to bottom — together they make the code. Use ↑ and ↓ to move them.'
+            : 'Indentation is kept to help you spot which lines belong inside a block.'}
       </p>
       {!done ? (
         <button type="button" className="ps-btn ps-btn--primary" onClick={check}>
@@ -750,10 +808,12 @@ function CodeView({
 
 function PracticeSummary({
   results,
+  source,
   onExit,
   onNewSet,
 }: {
   results: Result[]
+  source: PracticeSource
   onExit: () => void
   onNewSet?: () => void
 }) {
@@ -765,15 +825,19 @@ function PracticeSummary({
   const toReview = [
     ...new Set(results.filter((r) => !r.correct).map((r) => r.question.subtopic)),
   ]
-  const byKind = Object.entries(
-    results.reduce<Record<string, { total: number; correct: number }>>((acc, r) => {
-      const entry = acc[r.question.kind] ?? { total: 0, correct: 0 }
-      entry.total += 1
-      if (r.correct) entry.correct += 1
-      acc[r.question.kind] = entry
-      return acc
-    }, {}),
-  )
+  const kindCounts = results.reduce<Record<string, { total: number; correct: number }>>((acc, r) => {
+    const entry = acc[r.question.kind] ?? { total: 0, correct: 0 }
+    entry.total += 1
+    if (r.correct) entry.correct += 1
+    acc[r.question.kind] = entry
+    return acc
+  }, {})
+  const byKind =
+    source === 'chapter-quiz'
+      ? (['mcq', 'fill', 'order'] as const).map(
+          (kind) => [kind, kindCounts[kind] ?? { total: 0, correct: 0 }] as const,
+        )
+      : Object.entries(kindCounts)
 
   useEffect(() => {
     notifyCatQuizFinished(score)

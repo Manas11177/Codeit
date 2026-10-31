@@ -77,7 +77,8 @@ const PAGE_META: Record<PageId, { label: string; title: string; icon: string; in
     label: 'Arrange',
     title: 'Arrange in order',
     icon: '🔀',
-    intro: 'Move the pieces with ↑ and ↓ until the code is in the right order.',
+    intro:
+      'Put the lines in the order they run. If a line does not belong, leave it out.',
   },
   practice: {
     label: 'Program',

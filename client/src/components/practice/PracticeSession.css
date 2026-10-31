@@ -426,6 +426,26 @@
   cursor: default;
 }
 
+.ps-order__controls button.ps-order__leave {
+  width: auto;
+  padding: 0 0.55rem;
+  font-size: 12px;
+}
+
+.ps-order-unused {
+  margin: 0 0 0.85rem;
+  padding: 0.7rem 0.75rem 0.2rem;
+  border: 1px dashed rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+}
+
+.ps-order-unused__label {
+  margin: 0 0 0.55rem;
+  font-size: 13px;
+  font-weight: 600;
+  color: #d1d5db;
+}
+
 .ps-challenge {
   border-left: 3px solid #fbbf24;
   background: rgba(251, 191, 36, 0.08);

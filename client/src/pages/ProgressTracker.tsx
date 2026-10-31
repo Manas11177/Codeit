@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { PracticeSession } from '../components/practice/PracticeSession'
+import { ProgressGraphs } from '../components/progress/ProgressGraphs'
 import { useLearningInsights } from '../hooks/useLearningInsights'
 import {
   getLearningInsights,
@@ -11,6 +12,7 @@ import { ERROR_TIPS } from '../learning/errors'
 import {
   ACTIVITY_LABELS,
   availableKinds,
+  CHAPTER_QUIZ_SLOTS,
   buildPracticeSet,
   canGenerate,
   type PracticeQuestion,
@@ -132,6 +134,8 @@ export function ProgressTracker() {
           <StatTile label="Streak" value={`${totals.streak} 🔥`} sub="days in a row" />
         </section>
 
+        <ProgressGraphs />
+
         {!insights.hasData ? (
           <section className="pt-card pt-empty">
             <h2>No learning data yet</h2>
@@ -160,12 +164,13 @@ export function ProgressTracker() {
                 onQuiz={() =>
                   startPractice({
                     title: `${chapter.title} — chapter quiz`,
-                    subtitle: 'Six multiple-choice questions shaped by how you solved this chapter.',
+                    subtitle:
+                      'Seven questions — multiple choice, fill-in, and arrange — shaped by how you solved this chapter.',
                     options: {
                       source: 'chapter-quiz',
                       lessonId: chapter.lessonId,
-                      kinds: ['mcq'],
-                      count: 6,
+                      slots: CHAPTER_QUIZ_SLOTS,
+                      count: 7,
                     },
                   })
                 }

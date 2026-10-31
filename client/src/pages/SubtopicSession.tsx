@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { notifyCatQuizAnswer, nudgeCatAfterTimerClear } from '../cat/catEngine'
+import { setQuestionTimerRunning } from '../cat/questionTimerGate'
 import { LESSON_DATA } from '../carousel/lessonData'
 import { runPlaygroundCode } from '../api/playground'
 import { CodeEditor } from '../components/editor/CodeEditor'
@@ -8,6 +10,8 @@ import {
   FillView,
   McqView,
   OrderView,
+  QUESTION_TIME_LIMITS,
+  QuestionTimer,
 } from '../components/practice/PracticeSession'
 import { getConceptExplainer } from '../data/lessonExplanations'
 import { getSubtopicExercise } from '../data/subtopicContent'
@@ -32,6 +36,7 @@ import {
   saveWarmupVisit,
 } from '../utils/lessonProgress'
 import { clipboardBlockProps } from '../utils/blockClipboard'
+import { requireAuth } from '../utils/navigation'
 import '../components/practice/PracticeSession.css'
 import './SubtopicSession.css'
 
@@ -39,6 +44,15 @@ type WarmupKind = 'mcq' | 'fill' | 'order'
 type WarmupResult = 'correct' | 'wrong' | 'skipped'
 type PageId = 'learn' | WarmupKind | 'practice'
 type PageStatus = 'done' | 'current' | 'open' | 'locked'
+
+function WarmupTimerBridge({ running }: { running: boolean }) {
+  useEffect(() => {
+    setQuestionTimerRunning(running)
+    if (!running) nudgeCatAfterTimerClear()
+    return () => setQuestionTimerRunning(false)
+  }, [running])
+  return null
+}
 
 const PAGE_META: Record<PageId, { label: string; title: string; icon: string; intro: string }> = {
   learn: {
@@ -63,7 +77,8 @@ const PAGE_META: Record<PageId, { label: string; title: string; icon: string; in
     label: 'Arrange',
     title: 'Arrange in order',
     icon: '🔀',
-    intro: 'Move the pieces with ↑ and ↓ until the code is in the right order.',
+    intro:
+      'Put the lines in the order they run. If a line does not belong, leave it out.',
   },
   practice: {
     label: 'Program',
@@ -158,6 +173,7 @@ export function SubtopicSession({
   const [direction, setDirection] = useState<'forward' | 'back'>('forward')
   const [learnDone, setLearnDone] = useState(reviewMode)
   const [answers, setAnswers] = useState<Partial<Record<WarmupKind, WarmupResult>>>({})
+  const [warmupTimedOut, setWarmupTimedOut] = useState<Partial<Record<WarmupKind, boolean>>>({})
 
   const page = pages[pageIndex]
   const lessonLabel = `${lessonIndex + 1}.${subtopicIndex + 1}`
@@ -201,7 +217,12 @@ export function SubtopicSession({
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  function handleWarmupAnswer(kind: WarmupKind, question: PracticeQuestion, correct: boolean) {
+  function handleWarmupAnswer(
+    kind: WarmupKind,
+    question: PracticeQuestion,
+    correct: boolean,
+    fromTimeout = false,
+  ) {
     if (answers[kind] !== undefined && answers[kind] !== 'skipped') return
     setAnswers((prev) => ({ ...prev, [kind]: correct ? 'correct' : 'wrong' }))
     recordPracticeResult({
@@ -214,6 +235,7 @@ export function SubtopicSession({
       usedHint: false,
       source: 'lesson',
     })
+    notifyCatQuizAnswer({ correct, timedOut: fromTimeout })
   }
 
   async function handleRunExample() {
@@ -304,11 +326,36 @@ export function SubtopicSession({
   }
 
   function renderWarmup(kind: WarmupKind, question: PracticeQuestion) {
+    const settled = answers[kind] === 'correct' || answers[kind] === 'wrong'
+    const timedOut = Boolean(warmupTimedOut[kind])
     const onAnswer = (correct: boolean) => handleWarmupAnswer(kind, question, correct)
-    if (question.kind === 'mcq') return <McqView question={question} onAnswer={onAnswer} />
-    if (question.kind === 'fill') return <FillView question={question} onAnswer={onAnswer} />
-    if (question.kind === 'order') return <OrderView question={question} onAnswer={onAnswer} />
-    return null
+    const onTimeout = () => {
+      setWarmupTimedOut((prev) => ({ ...prev, [kind]: true }))
+      handleWarmupAnswer(kind, question, false, true)
+    }
+
+    const view =
+      question.kind === 'mcq' ? (
+        <McqView question={question} onAnswer={onAnswer} timedOut={timedOut} />
+      ) : question.kind === 'fill' ? (
+        <FillView question={question} onAnswer={onAnswer} timedOut={timedOut} />
+      ) : question.kind === 'order' ? (
+        <OrderView question={question} onAnswer={onAnswer} timedOut={timedOut} />
+      ) : null
+
+    if (!view) return null
+
+    return (
+      <div key={question.id}>
+        <WarmupTimerBridge running={!settled} />
+        <QuestionTimer
+          totalSeconds={QUESTION_TIME_LIMITS[kind][question.difficulty]}
+          paused={settled}
+          onTimeout={onTimeout}
+        />
+        {view}
+      </div>
+    )
   }
 
   const meta = PAGE_META[page]
@@ -327,10 +374,15 @@ export function SubtopicSession({
           <span className="lc-session__course-icon">🐍</span>
           {lessonShortTitle(lessonTitle)}
         </div>
-        <div className="lc-session__streak">
+        <button
+          type="button"
+          className="lc-session__streak"
+          onClick={() => void requireAuth('/streak')}
+          title="Open streak & medals"
+        >
           <span>🔥</span>
           <span>{stats.streak} day streak</span>
-        </div>
+        </button>
       </header>
 
       <div className={`lc-session__layout lc-session__layout--${layoutVariant}`}>

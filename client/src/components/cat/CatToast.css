@@ -1,0 +1,106 @@
+.cat-toast {
+  position: fixed;
+  right: max(0.85rem, env(safe-area-inset-right));
+  bottom: max(5.5rem, calc(env(safe-area-inset-bottom) + 4.75rem));
+  z-index: 80;
+  pointer-events: none;
+  max-width: min(20rem, calc(100vw - 1.5rem));
+}
+
+.cat-toast__dismiss {
+  pointer-events: auto;
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.cat-toast__panel {
+  pointer-events: none;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 0.45rem;
+  animation: cat-toast-in 0.35s ease both;
+}
+
+.cat-toast__cat {
+  width: 100px;
+  height: 100px;
+  flex: none;
+}
+
+.cat-toast__lottie,
+.cat-toast__lottie canvas,
+.cat-toast__emoji {
+  width: 100%;
+  height: 100%;
+}
+
+.cat-toast__emoji {
+  display: grid;
+  place-items: center;
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.cat-toast__bubble {
+  margin: 0 0 0.35rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 14px 14px 4px 14px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.35;
+  background: rgba(255, 255, 255, 0.96);
+  color: #0f172a;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
+}
+
+html.dark-mode .cat-toast__bubble {
+  background: rgba(15, 23, 42, 0.96);
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes cat-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cat-toast-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.cat-toast.is-leaving .cat-toast__panel {
+  animation: cat-toast-out 0.28s ease both;
+}
+
+@media (max-width: 640px) {
+  .cat-toast {
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: max(5.75rem, calc(env(safe-area-inset-bottom) + 5rem));
+    max-width: none;
+  }
+}

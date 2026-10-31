@@ -729,7 +729,7 @@ function generateFill(ctx: GenContext): FillQuestion | null {
     wordBank = shuffle([...new Set([...answers, ...extras])], ctx.rng)
   }
 
-  return {
+  const question: FillQuestion = {
     ...baseQuestion(ctx, 'fill', `fill:${key}`, id),
     kind: 'fill',
     prompt:
@@ -745,6 +745,7 @@ function generateFill(ctx: GenContext): FillQuestion | null {
         ? `Complete code:\n${code}\n\nIt prints:\n${ctx.exampleOutput}`
         : `Complete code:\n${code}`,
   }
+  return fillQuestionIsSound(question) ? question : null
 }
 
 export function checkFillAnswers(question: FillQuestion, inputs: string[]) {
@@ -788,18 +789,76 @@ function buildBlocks(lines: string[]): number[][] {
   return blocks
 }
 
+function solutionIndices(question: OrderQuestion) {
+  return question.blocks.flat()
+}
+
+/** Lines that are shown but are not part of any correct arrangement. */
+function distractorIndices(question: OrderQuestion) {
+  const used = new Set(solutionIndices(question))
+  return question.lines.map((_, index) => index).filter((index) => !used.has(index))
+}
+
 export function isOrderCorrect(question: OrderQuestion, order: number[]) {
+  const expected = solutionIndices(question)
+  if (order.length !== expected.length) return false
+  const allowed = new Set(expected)
+  if (order.some((index) => !allowed.has(index))) return false
+  if (new Set(order).size !== order.length) return false
+
   let position = 0
   for (const block of question.blocks) {
     const actual = order
       .slice(position, position + block.length)
       .map((i) => question.lines[i])
       .sort()
-    const expected = block.map((i) => question.lines[i]).sort()
-    if (actual.join('\n') !== expected.join('\n')) return false
+    const wanted = block.map((i) => question.lines[i]).sort()
+    if (actual.join('\n') !== wanted.join('\n')) return false
     position += block.length
   }
+  return position === order.length
+}
+
+/**
+ * Rejects an arrange question whose solution is incomplete, or whose extra
+ * lines can stand in for a real line. Fill questions must rebuild the solution.
+ */
+function orderQuestionIsSound(question: OrderQuestion) {
+  const solution = solutionIndices(question)
+  if (solution.length < 2) return false
+  if (new Set(solution).size !== solution.length) return false
+  if (solution.some((index) => index < 0 || index >= question.lines.length)) return false
+  if (!isOrderCorrect(question, solution)) return false
+
+  const solutionText = new Set(solution.map((index) => normalizeCode(question.lines[index])))
+  for (const extra of distractorIndices(question)) {
+    const text = normalizeCode(question.lines[extra])
+    if (!text || solutionText.has(text)) return false
+    for (let pos = 0; pos <= solution.length; pos += 1) {
+      const withExtra = [...solution.slice(0, pos), extra, ...solution.slice(pos)]
+      if (isOrderCorrect(question, withExtra)) return false
+    }
+    for (let pos = 0; pos < solution.length; pos += 1) {
+      const replaced = solution.map((index, at) => (at === pos ? extra : index))
+      if (isOrderCorrect(question, replaced)) return false
+    }
+  }
   return true
+}
+
+function fillQuestionIsSound(question: FillQuestion) {
+  if (question.answers.length === 0) return false
+  const slots = [...question.template.matchAll(/\{\{(\d+)\}\}/g)].map((match) => Number(match[1]))
+  if (slots.length !== question.answers.length || slots.some((slot, index) => slot !== index)) {
+    return false
+  }
+  let rebuilt = question.template
+  for (let i = question.answers.length - 1; i >= 0; i -= 1) {
+    const token = `{{${i}}}`
+    if (!rebuilt.includes(token)) return false
+    rebuilt = rebuilt.replace(token, question.answers[i])
+  }
+  return rebuilt === question.solution
 }
 
 const PIECE_TOKEN =
@@ -850,6 +909,85 @@ function splitIntoPieces(code: string): string[] | null {
   return pieces.map(text)
 }
 
+/** Realistic wrong lines. Never a reordering or an equivalent way to write a real line. */
+const LINE_MISTAKES: ((line: string) => string | null)[] = [
+  (line) => mutateLine(line, /\bprint\b/, () => 'Print'),
+  (line) => mutateLine(line, /\binput\b/, () => 'Input'),
+  (line) => mutateLine(line, /\belif\b/, () => 'elseif'),
+  (line) => mutateLine(line, /\belse\b/, () => 'otherwise'),
+  (line) => mutateLine(line, /\bdef\b/, () => 'function'),
+  (line) => mutateLine(line, /\breturn\b/, () => 'retrun'),
+  (line) => mutateLine(line, /\bTrue\b/, () => 'true'),
+  (line) => mutateLine(line, /\bFalse\b/, () => 'false'),
+  (line) => mutateLine(line, /\bNone\b/, () => 'null'),
+  (line) => mutateLine(line, /\band\b/, () => '&&'),
+  (line) => mutateLine(line, /\bor\b/, () => '||'),
+  (line) => mutateLine(line, /\bnot\b/, () => '!'),
+  (line) => mutateLine(line, /\bfor\b/, () => 'foreach'),
+  (line) => mutateLine(line, /\bwhile\b/, () => 'whlie'),
+  (line) => mutateLine(line, /\brange\b/, () => 'rang'),
+  (line) => mutateLine(line, /\blen\b/, () => 'length'),
+  (line) => mutateLine(line, /\bappend\b/, () => 'add'),
+  (line) => mutateLine(line, /\bbreak\b/, () => 'stop'),
+  (line) => mutateLine(line, /\bcontinue\b/, () => 'skip'),
+  (line) => mutateLine(line, /\bint\b/, () => 'integer'),
+  (line) => mutateLine(line, /\bstr\b/, () => 'string'),
+  (line) => mutateLine(line, /==/, () => '='),
+  (line) => mutateLine(line, /!=/, () => '=!'),
+  (line) => mutateLine(line, /:(?=[ \t]*$)/, () => ''),
+  (line) =>
+    mutateLine(line, /\bprint\(([^()\n]*)\)\s*$/, (match) => `print ${match[1]}`),
+  (line) =>
+    mutateLine(
+      line,
+      /(>=|<=|\/\/|\*\*|(?<![=!<>])[*+\-/%<>](?!=))/,
+      (match) =>
+        ({
+          '>=': '>',
+          '<=': '<',
+          '//': '/',
+          '**': '*',
+          '*': '+',
+          '+': '-',
+          '-': '+',
+          '/': '//',
+          '%': '//',
+          '>': '<',
+          '<': '>',
+        })[match[0]] ?? match[0],
+    ),
+]
+
+function mutateLine(
+  line: string,
+  pattern: RegExp,
+  replacer: (match: RegExpExecArray) => string,
+) {
+  const next = replaceFirstOutsideString(line, pattern, replacer)
+  if (!next || normalizeCode(next) === normalizeCode(line)) return null
+  return next
+}
+
+function distractorLines(lines: string[], rng: Rng, count: number) {
+  if (count === 0) return []
+  const taken = new Set(lines.map((line) => normalizeCode(line)))
+  const found: string[] = []
+  const rules = shuffle(LINE_MISTAKES, rng)
+  const order = shuffle(lines.map((_, index) => index), rng)
+  for (const rule of rules) {
+    for (const index of order) {
+      const next = rule(lines[index])
+      if (!next) continue
+      const key = normalizeCode(next)
+      if (!key || taken.has(key)) continue
+      taken.add(key)
+      found.push(next)
+      if (found.length === count) return found
+    }
+  }
+  return found
+}
+
 function generateOrder(ctx: GenContext): OrderQuestion | null {
   const ex = ctx.exercise
   const fromExample = ctx.target === 'example'
@@ -884,43 +1022,85 @@ function generateOrder(ctx: GenContext): OrderQuestion | null {
   }
 
   const challengeLabel = `the solution for:\n“${ex.challenge}”`
-  const sources = (
+  const wantedExtras = ctx.difficulty === 'hard' ? 2 : ctx.difficulty === 'medium' ? 1 : 0
+  // Easy keeps today's line-then-pieces order. Medium and hard stay on whole lines
+  // so a distractor is a line the student can leave out.
+  let sources = (
     fromExample
       ? [
           lineSource('example', ex.exampleCode, `Arrange the lines of ${label} in the order they must run.`),
-          pieceSource('example', ex.exampleCode, label),
+          ...(wantedExtras === 0 ? [pieceSource('example', ex.exampleCode, label)] : []),
         ]
       : [
           lineSource('solution', ex.solution, `Arrange the lines in the correct order to solve:\n“${ex.challenge}”`),
           lineSource('example', ex.exampleCode, `Arrange the lines of ${label} in the order they must run.`),
-          pieceSource('solution', ex.solution, challengeLabel),
+          ...(wantedExtras === 0 ? [pieceSource('solution', ex.solution, challengeLabel)] : []),
         ]
   ).filter((s): s is Source => s !== null)
+
+  if (ctx.difficulty === 'hard') {
+    sources = sources
+      .map((source, index) => ({ source, index }))
+      .sort((a, b) => {
+        const aLong = a.source.lines.length >= 5 ? 1 : 0
+        const bLong = b.source.lines.length >= 5 ? 1 : 0
+        if (aLong !== bLong) return bLong - aLong
+        if (a.source.lines.length !== b.source.lines.length) {
+          return b.source.lines.length - a.source.lines.length
+        }
+        return a.index - b.index
+      })
+      .map(({ source }) => source)
+  }
 
   const topicKeyValue = `${ex.lessonId}:${ex.subtopic}`
   for (const source of sources) {
     const id = `order:${topicKeyValue}:${source.key}`
     if (ctx.usedIds.has(id)) continue
 
+    const extras =
+      source.mode === 'lines' ? distractorLines(source.lines, ctx.rng, wantedExtras) : []
+    if (extras.length !== wantedExtras) continue
+
+    const lines = [...source.lines, ...extras]
+    const leaveOut =
+      extras.length === 0
+        ? ''
+        : extras.length === 1
+          ? ' One line does not belong — leave it out.'
+          : ` ${extras.length} lines do not belong — leave them out.`
+    const correctCode =
+      fromExample && ctx.varied && ctx.exampleOutput
+        ? `Correct code:\n${source.code}\n\nIt prints:\n${ctx.exampleOutput}`
+        : `Correct code:\n${source.code}\n\n${ex.exampleNote}`
+
     const question: OrderQuestion = {
       ...baseQuestion(ctx, 'order', `order:${topicKeyValue}${targetSuffix(ctx)}`, id),
       kind: 'order',
       mode: source.mode,
-      prompt: source.prompt,
-      lines: source.lines,
+      prompt: `${source.prompt}${leaveOut}`,
+      lines,
       shuffledOrder: [],
       blocks: source.blocks,
       explanation:
-        fromExample && ctx.varied && ctx.exampleOutput
-          ? `Correct code:\n${source.code}\n\nIt prints:\n${ctx.exampleOutput}`
-          : `Correct code:\n${source.code}\n\n${ex.exampleNote}`,
+        extras.length === 0
+          ? correctCode
+          : `${correctCode}\n\nLeave out:\n${extras.join('\n')}`,
     }
-    const indices = source.lines.map((_, i) => i)
+    if (!orderQuestionIsSound(question)) continue
+
+    const kept = new Set(solutionIndices(question))
+    const indices = lines.map((_, index) => index)
+    const alreadyCorrect = (order: number[]) =>
+      isOrderCorrect(
+        question,
+        order.filter((index) => kept.has(index)),
+      )
     let shuffled = shuffle(indices, ctx.rng)
-    for (let tries = 0; tries < 8 && isOrderCorrect(question, shuffled); tries += 1) {
+    for (let tries = 0; tries < 8 && alreadyCorrect(shuffled); tries += 1) {
       shuffled = shuffle(indices, ctx.rng)
     }
-    if (isOrderCorrect(question, shuffled)) continue
+    if (alreadyCorrect(shuffled)) continue
     question.shuffledOrder = shuffled
     return question
   }
@@ -1256,8 +1436,24 @@ export type PracticeSetOptions = {
   lessonId?: string
   subtopic?: string
   kinds?: ActivityKind[]
+  /**
+   * Build these kinds in order. A slot that cannot be produced becomes an MCQ.
+   * Used by the chapter quiz. Training sets leave this unset.
+   */
+  slots?: ActivityKind[]
   seed?: number
 }
+
+/** Chapter quiz: 3 multiple choice, 2 fill-in, 2 arrange. No code-writing. */
+export const CHAPTER_QUIZ_SLOTS: ActivityKind[] = [
+  'mcq',
+  'mcq',
+  'mcq',
+  'fill',
+  'fill',
+  'order',
+  'order',
+]
 
 function candidateTopics(options: PracticeSetOptions): TopicInsight[] {
   const { insights, lessonId, subtopic } = options
@@ -1277,7 +1473,72 @@ function candidateTopics(options: PracticeSetOptions): TopicInsight[] {
   return insights.topics.filter((t) => t.lessonId === LESSON_DATA[0].id)
 }
 
+function buildSlottedSet(options: PracticeSetOptions): PracticeQuestion[] {
+  const slots = options.slots ?? []
+  const rng = createRng(options.seed ?? Date.now())
+  let topics = candidateTopics(options)
+  if (topics.length === 0 && options.lessonId && !options.subtopic) {
+    topics = options.insights.topics.filter((topic) => topic.lessonId === options.lessonId)
+  }
+  if (topics.length === 0) return []
+
+  const weights = topics.map((topic) => 1 + (100 - (topic.mastery ?? 50)) / 25)
+  const mastered = recentlyMasteredBaseIds()
+  const usedIds = new Set<string>()
+  const questions: PracticeQuestion[] = []
+  let lastKey = ''
+
+  const nextTopic = () => {
+    let topic = weightedPick(topics, weights, rng)
+    if (topics.length > 1 && topic.key === lastKey) {
+      topic = weightedPick(topics, weights, rng)
+    }
+    lastKey = topic.key
+    return topic
+  }
+
+  for (const slot of slots) {
+    let picked: PracticeQuestion | null = null
+    let masteredPick: PracticeQuestion | null = null
+    let mcqPick: PracticeQuestion | null = null
+    const tries = Math.max(8, topics.length * 4)
+    for (let attempt = 0; attempt < tries && !picked; attempt += 1) {
+      const topic = nextTopic()
+      const question = generateQuestion(slot, topic, rng, usedIds)
+      if (question && !usedIds.has(question.id)) {
+        if (mastered.has(question.baseId)) masteredPick ??= question
+        else picked = question
+      }
+      if (slot !== 'mcq' && !mcqPick) {
+        const mcq = generateQuestion('mcq', topic, rng, usedIds)
+        if (mcq && !usedIds.has(mcq.id)) mcqPick = mcq
+      }
+    }
+    const final = picked ?? masteredPick ?? (slot === 'mcq' ? null : mcqPick)
+    if (!final) continue
+    usedIds.add(final.id)
+    questions.push(final)
+  }
+  return questions
+}
+
+export function buildChapterQuiz(
+  insights: LearningInsights,
+  lessonId: string,
+  seed: number = Date.now(),
+): PracticeQuestion[] {
+  return buildPracticeSet({
+    insights,
+    source: 'chapter-quiz',
+    lessonId,
+    count: CHAPTER_QUIZ_SLOTS.length,
+    slots: CHAPTER_QUIZ_SLOTS,
+    seed,
+  })
+}
+
 export function buildPracticeSet(options: PracticeSetOptions): PracticeQuestion[] {
+  if (options.slots && options.slots.length > 0) return buildSlottedSet(options)
   const rng = createRng(options.seed ?? Date.now())
   const requested = options.kinds
   const supports = (t: TopicInsight) =>

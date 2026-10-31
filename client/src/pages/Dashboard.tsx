@@ -2,12 +2,63 @@ import { useEffect, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useUserStats } from "../hooks/useUserStats";
 import { supabase } from "../lib/supabase";
+import { LESSON_DATA } from "../carousel/lessonData";
+import { ProfileMenu } from "../components/profile/ProfileMenu";
+import {
+  getNextGoodie,
+  getUnlockedGoodieCount,
+  REWARD_GOODIES,
+} from "../rewards/goodies";
+import {
+  STATS_UPDATED_EVENT,
+  getAchievements,
+  getPreferences,
+  getPreferredStartLessonId,
+  queueStartLesson,
+} from "../utils/lessonProgress";
 import { goTo, requireAuth } from "../utils/navigation";
 
 function Dashboard() {
-  const { darkMode, toggleTheme } = useTheme();
+  const { darkMode } = useTheme();
   const stats = useUserStats();
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [prefsTick, setPrefsTick] = useState(0);
+
+  useEffect(() => {
+    function refreshPrefs() {
+      setPrefsTick((n) => n + 1);
+    }
+    window.addEventListener(STATS_UPDATED_EVENT, refreshPrefs);
+    return () =>
+      window.removeEventListener(STATS_UPDATED_EVENT, refreshPrefs);
+  }, []);
+
+  void prefsTick;
+  const medalsEarned = getAchievements().filter((item) => item.unlocked).length;
+  const rewardsUnlocked = getUnlockedGoodieCount();
+  const nextGoodie = getNextGoodie();
+  const prefs = getPreferences();
+  const dailyTarget =
+    prefs && !prefs.skipped && prefs.dailyMinutes
+      ? prefs.dailyMinutes
+      : null;
+  const showPrefsPrompt =
+    !prefs ||
+    prefs.skipped ||
+    !(prefs.goal && prefs.experience && prefs.dailyMinutes);
+  const startLessonId = getPreferredStartLessonId();
+  const startLessonTitle =
+    LESSON_DATA.find((lesson) => lesson.id === startLessonId)?.title ??
+    "your first lesson";
+
+  function goToContinue() {
+    queueStartLesson(startLessonId);
+    void requireAuth("/lessons");
+  }
+
+  function openEditPreferences() {
+    window.dispatchEvent(new CustomEvent("codementor-edit-preferences"));
+  }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -27,11 +78,6 @@ function Dashboard() {
   const goToLessons = () => void requireAuth("/lessons");
   const goToEditor = () => void requireAuth("/virtual-editor");
   const goToProgress = () => void requireAuth("/progress");
-
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    goTo("/");
-  }
 
   return (
     <div
@@ -77,7 +123,7 @@ function Dashboard() {
             style={{ fontFamily: "'Instrument Serif', serif" }}
           >
             Code
-            <span className={darkMode ? "text-cyan-300" : "text-blue-600"}>
+            <span className={darkMode ? "text-[var(--cm-accent)]" : "text-[var(--cm-accent)]"}>
               Mentor
             </span>
           </h1>
@@ -102,7 +148,7 @@ function Dashboard() {
             <button
               type="button"
               onClick={goToLessons}
-              className="transition-colors hover:text-blue-600"
+              className="transition-colors hover:text-[var(--cm-accent)]"
             >
               Lessons
             </button>
@@ -110,7 +156,7 @@ function Dashboard() {
             <button
               type="button"
               onClick={goToEditor}
-              className="transition-colors hover:text-blue-600"
+              className="transition-colors hover:text-[var(--cm-accent)]"
             >
               Virtual Editor
             </button>
@@ -118,47 +164,16 @@ function Dashboard() {
             <button
               type="button"
               onClick={goToProgress}
-              className="transition-colors hover:text-blue-600"
+              className="transition-colors hover:text-[var(--cm-accent)]"
             >
               Progress
             </button>
           </div>
 
-          {/* Right Side */}
+          {/* Right Side — avatar / login only */}
           <div className="flex items-center gap-3">
-
-            {/* Theme Button */}
-            <button
-              onClick={toggleTheme}
-              className={`liquid-glass flex h-10 w-10 items-center justify-center rounded-full text-lg transition duration-300 hover:scale-110 ${
-                darkMode
-                  ? "text-white"
-                  : "text-slate-900"
-              }`}
-              aria-label="Toggle theme"
-            >
-              {darkMode ? "☀️" : "🌙"}
-            </button>
-
             {userEmail ? (
-              <>
-                <span
-                  className={`hidden text-sm md:inline ${
-                    darkMode ? "text-white/70" : "text-slate-600"
-                  }`}
-                >
-                  {userEmail}
-                </span>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className={`liquid-glass rounded-full px-6 py-2.5 text-sm transition duration-300 hover:scale-[1.03] ${
-                    darkMode ? "text-white" : "text-slate-900"
-                  }`}
-                >
-                  Logout
-                </button>
-              </>
+              <ProfileMenu email={userEmail} />
             ) : (
               <button
                 type="button"
@@ -186,7 +201,7 @@ function Dashboard() {
             >
               <span
                 className={`mr-2 ${
-                  darkMode ? "text-cyan-300" : "text-blue-600"
+                  darkMode ? "text-[var(--cm-accent)]" : "text-[var(--cm-accent)]"
                 }`}
               >
                 ●
@@ -225,9 +240,20 @@ function Dashboard() {
               simple and engaging.
             </p>
 
+            {userEmail && showPrefsPrompt ? (
+              <button
+                type="button"
+                onClick={openEditPreferences}
+                className={`mt-5 text-sm underline-offset-2 hover:underline animate-fade-rise-delay ${
+                  darkMode ? "text-white/50" : "text-slate-500"
+                }`}
+              >
+                Set your goals to personalise your learning
+              </button>
+            ) : null}
+
             {/* CTA */}
             <div className="mt-12 flex flex-wrap justify-center gap-4 animate-fade-rise-delay-2">
-
               <button
                 type="button"
                 onClick={goToLessons}
@@ -237,25 +263,18 @@ function Dashboard() {
               >
                 Start Learning →
               </button>
-
-              <button
-                type="button"
-                onClick={goToEditor}
-                className={`liquid-glass rounded-full px-10 py-4 text-base transition duration-300 hover:scale-[1.03] ${
-                  darkMode
-                    ? "text-white/80 hover:text-white"
-                    : "text-slate-800 hover:text-slate-950"
-                }`}
-              >
-                Open Virtual Editor
-              </button>
             </div>
 
             {/* Stats */}
             <div className="mt-20 grid w-full max-w-4xl grid-cols-2 gap-4 md:grid-cols-4">
 
-              {/* Lessons */}
-              <div className="liquid-glass rounded-2xl p-5 text-left transition duration-300 hover:-translate-y-1">
+              {/* Lessons Completed → constellation */}
+              <button
+                type="button"
+                onClick={() => void requireAuth("/constellation")}
+                className="liquid-glass rounded-2xl p-5 text-left transition duration-300 hover:-translate-y-1"
+                title="Open course constellation"
+              >
                 <p
                   className={
                     darkMode
@@ -263,7 +282,7 @@ function Dashboard() {
                       : "text-sm text-slate-600"
                   }
                 >
-                  Lessons
+                  Lessons Completed
                 </p>
 
                 <p
@@ -276,15 +295,21 @@ function Dashboard() {
 
                 <p
                   className={`mt-1 text-xs ${
-                    darkMode ? "text-cyan-300" : "text-blue-600"
+                    darkMode ? "text-[var(--cm-accent)]" : "text-[var(--cm-accent)]"
                   }`}
                 >
                   {stats.topicsCompleted} topics done
+                  <span className="ml-1 opacity-80">· View →</span>
                 </p>
-              </div>
+              </button>
 
-              {/* Streak */}
-              <div className="liquid-glass rounded-2xl p-5 text-left transition duration-300 hover:-translate-y-1">
+              {/* Streak & Medals */}
+              <button
+                type="button"
+                onClick={() => void requireAuth("/streak")}
+                className="liquid-glass rounded-2xl p-5 text-left transition duration-300 hover:-translate-y-1"
+                title="Open streak & medals"
+              >
                 <p
                   className={
                     darkMode
@@ -292,7 +317,7 @@ function Dashboard() {
                       : "text-sm text-slate-600"
                   }
                 >
-                  Current Streak
+                  Streak & Medals
                 </p>
 
                 <p
@@ -304,16 +329,27 @@ function Dashboard() {
                 </p>
 
                 <p className="mt-1 text-xs text-orange-500">
-                  {stats.streak === 0
-                    ? "Complete a topic today"
-                    : stats.streak === 1
-                      ? "Day 1 — keep it up"
-                      : "Keep going"}
+                  {medalsEarned} {medalsEarned === 1 ? "medal" : "medals"}
+                  <span className="ml-1 opacity-80">· View →</span>
                 </p>
-              </div>
+                {dailyTarget != null ? (
+                  <p
+                    className={`mt-2 text-xs ${
+                      darkMode ? "text-white/55" : "text-slate-600"
+                    }`}
+                  >
+                    Daily target: {dailyTarget === 30 ? "30+" : dailyTarget} min
+                  </p>
+                ) : null}
+              </button>
 
               {/* Progress */}
-              <div className="liquid-glass rounded-2xl p-5 text-left transition duration-300 hover:-translate-y-1">
+              <button
+                type="button"
+                onClick={() => void requireAuth("/progress")}
+                className="liquid-glass rounded-2xl p-5 text-left transition duration-300 hover:-translate-y-1"
+                title="Open progress tracker"
+              >
                 <p
                   className={
                     darkMode
@@ -339,15 +375,28 @@ function Dashboard() {
                 >
                   <div
                     className={`h-full rounded-full ${
-                      darkMode ? "bg-white" : "bg-blue-600"
+                      darkMode ? "bg-white" : "bg-[var(--cm-accent)]"
                     }`}
                     style={{ width: `${stats.progressPct}%` }}
                   />
                 </div>
-              </div>
+                <p
+                  className={`mt-2 text-xs ${
+                    darkMode ? "text-[var(--cm-accent)]" : "text-[var(--cm-accent)]"
+                  }`}
+                >
+                  Tracker
+                  <span className="ml-1 opacity-80">· View →</span>
+                </p>
+              </button>
 
-              {/* Achievements */}
-              <div className="liquid-glass rounded-2xl p-5 text-left transition duration-300 hover:-translate-y-1">
+              {/* Rewards */}
+              <button
+                type="button"
+                onClick={() => void requireAuth("/rewards")}
+                className="liquid-glass rounded-2xl p-5 text-left transition duration-300 hover:-translate-y-1"
+                title="Open rewards"
+              >
                 <p
                   className={
                     darkMode
@@ -355,7 +404,7 @@ function Dashboard() {
                       : "text-sm text-slate-600"
                   }
                 >
-                  Achievements
+                  Rewards
                 </p>
 
                 <p
@@ -363,17 +412,28 @@ function Dashboard() {
                     darkMode ? "text-white" : "text-slate-900"
                   }`}
                 >
-                  {stats.achievementsUnlocked} 🏆
+                  {rewardsUnlocked} of {REWARD_GOODIES.length}
                 </p>
 
                 <p
                   className={`mt-1 text-xs ${
-                    darkMode ? "text-purple-300" : "text-purple-600"
+                    darkMode ? "text-amber-300" : "text-amber-700"
                   }`}
                 >
-                  of {stats.achievementsTotal} badges
+                  unlocked
+                  <span className="ml-1 opacity-80">· View →</span>
                 </p>
-              </div>
+
+                <p
+                  className={`mt-3 text-xs ${
+                    darkMode ? "text-white/55" : "text-slate-600"
+                  }`}
+                >
+                  {nextGoodie
+                    ? `Next: ${nextGoodie.name}`
+                    : "All goodies unlocked"}
+                </p>
+              </button>
             </div>
           </section>
 
@@ -387,7 +447,7 @@ function Dashboard() {
             <div className="liquid-glass rounded-3xl p-8 transition duration-500 hover:-translate-y-2">
               <p
                 className={`text-sm font-medium tracking-widest ${
-                  darkMode ? "text-cyan-300" : "text-blue-600"
+                  darkMode ? "text-[var(--cm-accent)]" : "text-[var(--cm-accent)]"
                 }`}
               >
                 CONTINUE LEARNING
@@ -407,13 +467,14 @@ function Dashboard() {
                   darkMode ? "text-white/55" : "text-slate-600"
                 }`}
               >
-                Continue your lessons and improve your programming skills
-                through practical learning and coding challenges.
+                Suggested start: {startLessonTitle}. Continue your lessons and
+                improve your programming skills through practical learning and
+                coding challenges.
               </p>
 
               <button
                 type="button"
-                onClick={goToLessons}
+                onClick={goToContinue}
                 className={`liquid-glass mt-7 rounded-full px-7 py-3 text-sm transition hover:scale-105 ${
                   darkMode ? "text-white" : "text-slate-900"
                 }`}
@@ -474,7 +535,7 @@ function Dashboard() {
 
               <p
                 className={`text-sm tracking-widest ${
-                  darkMode ? "text-cyan-300" : "text-blue-600"
+                  darkMode ? "text-[var(--cm-accent)]" : "text-[var(--cm-accent)]"
                 }`}
               >
                 YOUR PROGRESS
@@ -527,7 +588,7 @@ function Dashboard() {
               >
                 <div
                   className={`h-full rounded-full ${
-                    darkMode ? "bg-white" : "bg-blue-600"
+                    darkMode ? "bg-white" : "bg-[var(--cm-accent)]"
                   }`}
                   style={{ width: `${stats.progressPct}%` }}
                 />

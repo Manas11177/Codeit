@@ -5,6 +5,7 @@ import {
   getAllPerformance,
   getCompletedSubtopics,
   getPracticeHistory,
+  getPreferences,
   topicKey,
   type ActivityKind,
   type Difficulty,
@@ -257,7 +258,14 @@ function buildTopicInsight(
       perf,
       topErrors.map((e) => e.category),
     ),
-    difficulty: difficultyFor(status),
+    difficulty: (() => {
+      const base = difficultyFor(status)
+      // Only nudge brand-new topics (no history). Never override once data exists.
+      const noHistory = !perf && !completed && stats.attempts === 0
+      if (!noHistory) return base
+      if (getPreferences()?.experience === 'comfortable') return 'medium'
+      return base
+    })(),
   }
 }
 

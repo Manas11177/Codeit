@@ -13,6 +13,11 @@ body,
   min-height: 100vh;
 }
 
+.app-shell--with-footer {
+  display: flex;
+  flex-direction: column;
+}
+
 .app-shell--loading {
   display: grid;
   place-items: center;
@@ -55,8 +60,8 @@ body,
 }
 
 .lessons-home-link:hover {
-  border-color: #00a99d;
-  color: #00a99d;
+  border-color: var(--cm-accent);
+  color: var(--cm-accent);
 }
 
 .lessons-progress-link {

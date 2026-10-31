@@ -4,13 +4,16 @@ import type { CarouselItem } from '../carousel/items'
 import { goTo } from '../utils/navigation'
 import {
   buildCarouselItems,
+  consumeStartLesson,
   STATS_UPDATED_EVENT,
 } from '../utils/lessonProgress'
 import { LessonPage } from './LessonPage'
 import './LessonPage.css'
 
 export function Lessons() {
-  const [selectedLesson, setSelectedLesson] = useState<string | null>(null)
+  const [selectedLesson, setSelectedLesson] = useState<string | null>(() =>
+    consumeStartLesson(),
+  )
   const [carouselItems, setCarouselItems] = useState<CarouselItem[]>(() =>
     buildCarouselItems(),
   )
@@ -62,4 +65,3 @@ export function Lessons() {
     </div>
   )
 }
-

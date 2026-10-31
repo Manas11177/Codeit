@@ -54,7 +54,7 @@
 }
 
 .lessons-page__carousel-heading .lessons-page__section-label {
-  color: #7ed8d0;
+  color: var(--cm-accent);
 }
 
 .lessons-page__carousel-heading h2 {
@@ -128,8 +128,8 @@
   height: 44px;
   place-items: center;
   border-radius: 12px;
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--cm-accent-soft);
+  color: var(--cm-accent);
   font-family: var(--font-mono);
   font-size: 0.78rem;
   font-weight: 700;

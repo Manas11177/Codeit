@@ -1,0 +1,384 @@
+.sm {
+  position: relative;
+  min-height: 100vh;
+  padding: 28px 6% 90px;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+.sm__glow {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 480px;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 65% at 12% 0%, rgba(251, 146, 60, 0.18), transparent 60%),
+    radial-gradient(ellipse 45% 55% at 90% 8%, var(--cm-accent-soft), transparent 60%);
+}
+
+.sm__shell {
+  position: relative;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.sm-nav {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 1.8rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sm-nav__avatar {
+  margin-left: auto;
+}
+
+.sm-nav button {
+  border-radius: 999px;
+  padding: 0.5rem 1.1rem;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.sm-hero {
+  max-width: 640px;
+  margin-bottom: 1.6rem;
+}
+
+.sm-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #f97316;
+}
+
+.sm-hero h1 {
+  margin: 0.45rem 0 0.6rem;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.sm-hero p {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.55;
+}
+
+.sm-section__head {
+  margin-bottom: 0.9rem;
+}
+
+.sm-section__head h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.2rem;
+}
+
+.sm-section__head p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.sm-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.sm-card {
+  border-radius: 18px;
+  padding: 1.15rem 1.2rem;
+  border: 1px solid transparent;
+}
+
+.sm-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sm-stat span {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.sm-stat strong {
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.sm-stat--hero strong {
+  font-size: clamp(2.6rem, 6vw, 3.4rem);
+}
+
+.sm-stat strong em {
+  font-style: normal;
+  font-size: 0.7em;
+}
+
+.sm-stat small {
+  font-size: 0.82rem;
+}
+
+.sm-empty {
+  text-align: center;
+  padding: 2.4rem 1.4rem;
+  margin-bottom: 1.2rem;
+}
+
+.sm-empty span {
+  font-size: 2.4rem;
+}
+
+.sm-empty h2 {
+  margin: 0.6rem 0 0.35rem;
+}
+
+.sm-empty p {
+  margin: 0 0 1rem;
+}
+
+.sm-btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.7rem 1.3rem;
+  font-weight: 650;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+}
+
+.sm-calendar {
+  margin-bottom: 1.4rem;
+}
+
+.sm-cal__weekdays,
+.sm-cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.sm-cal__weekdays {
+  margin-bottom: 0.45rem;
+}
+
+.sm-cal__weekdays span {
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.65;
+}
+
+.sm-cal__cell {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.sm-cal__cell.is-empty {
+  visibility: hidden;
+}
+
+.sm-shelf {
+  margin-top: 0.4rem;
+}
+
+.sm-medals {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.sm-medal {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.85rem;
+  align-items: center;
+  border-radius: 16px;
+  padding: 0.95rem 1rem;
+  border: 1px solid transparent;
+}
+
+.sm-medal__icon {
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.sm-medal__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.2rem;
+}
+
+.sm-medal__title strong {
+  font-size: 1rem;
+}
+
+.sm-medal p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.sm-medal__badge {
+  font-size: 1.25rem;
+  opacity: 0.9;
+}
+
+.sm-tier {
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 0.15rem 0.5rem;
+}
+
+.sm-tier--bronze {
+  background: rgba(180, 83, 9, 0.18);
+  color: #d97706;
+}
+
+.sm-tier--silver {
+  background: rgba(100, 116, 139, 0.2);
+  color: #94a3b8;
+}
+
+.sm-tier--gold {
+  background: rgba(202, 138, 4, 0.2);
+  color: #eab308;
+}
+
+/* Dark */
+.sm--dark {
+  background: #050505;
+  color: #f5f5f5;
+}
+
+.sm--dark .sm-nav button {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #e5e7eb;
+}
+
+.sm--dark .sm-hero p,
+.sm--dark .sm-section__head p,
+.sm--dark .sm-stat span,
+.sm--dark .sm-stat small,
+.sm--dark .sm-medal p {
+  color: #9ca3af;
+}
+
+.sm--dark .sm-card,
+.sm--dark .sm-medal {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.sm--dark .sm-cal__cell {
+  background: rgba(255, 255, 255, 0.04);
+  color: #cbd5e1;
+}
+
+.sm--dark .sm-cal__cell.is-active {
+  background: linear-gradient(145deg, #f97316, #ea580c);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.28);
+}
+
+.sm--dark .sm-medal.is-locked {
+  opacity: 0.55;
+  filter: grayscale(0.85);
+}
+
+.sm--dark .sm-medal.is-earned {
+  border-color: rgba(251, 191, 36, 0.28);
+  background: rgba(251, 191, 36, 0.06);
+}
+
+/* Light */
+.sm--light {
+  background:
+    radial-gradient(ellipse 50% 40% at 10% 0%, rgba(251, 146, 60, 0.12), transparent 55%),
+    #f1f5f9;
+  color: #0f172a;
+}
+
+.sm--light .sm-nav button {
+  border-color: rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  color: #0f172a;
+}
+
+.sm--light .sm-hero p,
+.sm--light .sm-section__head p,
+.sm--light .sm-stat span,
+.sm--light .sm-stat small,
+.sm--light .sm-medal p {
+  color: #64748b;
+}
+
+.sm--light .sm-card,
+.sm--light .sm-medal {
+  background: rgba(255, 255, 255, 0.86);
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+
+.sm--light .sm-cal__cell {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.sm--light .sm-cal__cell.is-active {
+  background: linear-gradient(145deg, #f97316, #ea580c);
+  color: #fff;
+}
+
+.sm--light .sm-medal.is-locked {
+  opacity: 0.6;
+  filter: grayscale(0.9);
+}
+
+.sm--light .sm-medal.is-earned {
+  border-color: rgba(217, 119, 6, 0.35);
+  background: #fff7ed;
+}
+
+.sm--light .sm-tier--silver {
+  color: #475569;
+}
+
+@media (max-width: 760px) {
+  .sm-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .sm-medal {
+    grid-template-columns: auto 1fr;
+  }
+
+  .sm-medal__badge {
+    display: none;
+  }
+}

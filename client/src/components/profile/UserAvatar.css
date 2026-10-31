@@ -1,0 +1,56 @@
+.ua {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.ua--sm {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.72rem;
+}
+
+.ua--md {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 0.85rem;
+}
+
+.ua--lg {
+  width: 3.5rem;
+  height: 3.5rem;
+  font-size: 1.15rem;
+}
+
+.ua__face {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  font-size: inherit;
+}
+
+.ua__face--emoji {
+  font-size: 1.15em;
+  line-height: 1;
+}
+
+.ua--framed {
+  box-shadow:
+    0 0 0 2px var(--cm-accent),
+    0 0 0 5px rgba(15, 23, 42, 0.35),
+    0 0 14px var(--cm-accent-soft);
+}
+
+.ua--framed .ua__face {
+  background: inherit;
+}

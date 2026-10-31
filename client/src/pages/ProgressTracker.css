@@ -15,7 +15,7 @@
   height: 520px;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 60% 70% at 15% 0%, rgba(0, 169, 157, 0.18), transparent 60%),
+    radial-gradient(ellipse 60% 70% at 15% 0%, rgb(var(--cm-accent-rgb) / 0.18), transparent 60%),
     radial-gradient(ellipse 45% 60% at 90% 10%, rgba(124, 58, 237, 0.14), transparent 60%);
 }
 
@@ -58,7 +58,7 @@
 }
 
 .pt-eyebrow {
-  color: #00a99d;
+  color: var(--cm-accent);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 2.5px;
@@ -140,7 +140,7 @@
 
 .pt-empty {
   margin-bottom: 2rem;
-  border-color: rgba(0, 169, 157, 0.35);
+  border-color: rgb(var(--cm-accent-rgb) / 0.35);
 }
 
 .pt-empty p {
@@ -194,12 +194,12 @@
 
 .pt-btn--primary {
   border-color: transparent;
-  background: linear-gradient(135deg, #00a99d, #0ea5e9);
-  color: #fff;
+  background: linear-gradient(135deg, var(--cm-accent), color-mix(in srgb, var(--cm-accent) 45%, white));
+  color: var(--cm-accent-contrast);
 }
 
 .pt-btn--primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #00b8ab, #22b3f0);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--cm-accent) 85%, white), var(--cm-accent));
 }
 
 .pt-btn--small {
@@ -219,7 +219,7 @@
 .pt-bar__fill {
   height: 100%;
   border-radius: inherit;
-  background: #00a99d;
+  background: var(--cm-accent);
   transition: width 0.5s ease;
 }
 
@@ -325,9 +325,9 @@
 }
 
 .pt-kind {
-  border: 1px solid rgba(0, 169, 157, 0.35);
-  background: rgba(0, 169, 157, 0.08);
-  color: #99f6e4;
+  border: 1px solid rgb(var(--cm-accent-rgb) / 0.35);
+  background: rgb(var(--cm-accent-rgb) / 0.08);
+  color: var(--cm-accent);
   border-radius: 10px;
   padding: 0.45rem 0.8rem;
   font-size: 13px;
@@ -339,7 +339,7 @@
 }
 
 .pt-kind:hover:not(:disabled) {
-  background: rgba(0, 169, 157, 0.2);
+  background: rgb(var(--cm-accent-rgb) / 0.2);
   transform: translateY(-1px);
 }
 
@@ -409,7 +409,7 @@
 
 .pt-picker select:focus {
   outline: none;
-  border-color: #00a99d;
+  border-color: var(--cm-accent);
 }
 
 .pt-chapters {
@@ -457,8 +457,8 @@
 }
 
 .pt-chapter__status--in-progress {
-  background: rgba(0, 169, 157, 0.15);
-  color: #5eead4;
+  background: rgb(var(--cm-accent-rgb) / 0.15);
+  color: var(--cm-accent);
 }
 
 .pt-chapter__metric {
@@ -568,7 +568,7 @@
 
 .pt-chart__bar {
   width: 100%;
-  background: #00a99d;
+  background: var(--cm-accent);
   transition: height 0.5s ease;
 }
 
@@ -585,7 +585,7 @@
 }
 
 .pt-chart__bar--solved {
-  background: #00a99d;
+  background: var(--cm-accent);
 }
 
 .pt-chart__bar--practice {
@@ -617,7 +617,7 @@
 }
 
 .pt-legend__solved {
-  background: #00a99d;
+  background: var(--cm-accent);
 }
 
 .pt-legend__practice {

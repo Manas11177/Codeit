@@ -1,11 +1,17 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl =
-  import.meta.env.VITE_SUPABASE_URL ||
-  'https://faulkwugtqaakjrevrir.supabase.co'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-const supabaseAnonKey =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhdWxrd3VndHFhYWtqcmV2cmlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2MzY5MDQsImV4cCI6MjEwMzIxMjkwNH0.eyZznJmW20ZgYmwNHHfM8LvwjbWkxi3Y31-B4MGDVB0'
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error(
+    '[CodeMentor] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. Copy client/.env.example to client/.env and fill in your project values, then restart Vite.',
+  )
+}
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Non-secret placeholders so the UI can boot before .env is filled.
+// Auth and cloud features will not work until real VITE_ values are set.
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'public-anon-placeholder',
+)

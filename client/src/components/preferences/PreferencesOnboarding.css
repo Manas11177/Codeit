@@ -1,0 +1,172 @@
+.prefs {
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+}
+
+.prefs__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.55);
+}
+
+.prefs__card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 440px);
+  border-radius: 22px;
+  padding: 1.5rem 1.4rem 1.25rem;
+  border: 1px solid transparent;
+}
+
+.prefs__eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.prefs__card h2 {
+  margin: 0.55rem 0 0.35rem;
+  font-size: 1.45rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.prefs__sub {
+  margin: 0 0 1.1rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.prefs__options {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.prefs__option {
+  text-align: left;
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: grid;
+  gap: 0.15rem;
+  font: inherit;
+}
+
+.prefs__option strong {
+  font-size: 0.98rem;
+}
+
+.prefs__option span {
+  font-size: 0.82rem;
+}
+
+.prefs__actions {
+  margin-top: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.prefs__nav {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.prefs__primary,
+.prefs__secondary,
+.prefs__ghost {
+  border-radius: 999px;
+  padding: 0.55rem 1.05rem;
+  font-weight: 650;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font: inherit;
+}
+
+.prefs__primary:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.prefs__primary {
+  color: var(--cm-accent-contrast);
+  background: linear-gradient(135deg, var(--cm-accent), color-mix(in srgb, var(--cm-accent) 45%, white));
+  border: 0;
+}
+
+.prefs--dark .prefs__card {
+  background: rgba(15, 23, 42, 0.96);
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+
+.prefs--dark .prefs__eyebrow {
+  color: var(--cm-accent);
+}
+
+.prefs--dark .prefs__sub,
+.prefs--dark .prefs__option span {
+  color: #94a3b8;
+}
+
+.prefs--dark .prefs__option {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #f8fafc;
+}
+
+.prefs--dark .prefs__option.is-selected {
+  border-color: rgb(var(--cm-accent-rgb) / 0.7);
+  background: rgb(var(--cm-accent-rgb) / 0.12);
+}
+
+.prefs--dark .prefs__ghost,
+.prefs--dark .prefs__secondary {
+  background: transparent;
+  color: #cbd5e1;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.prefs--light .prefs__card {
+  background: #fff;
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.08);
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.16);
+}
+
+.prefs--light .prefs__eyebrow {
+  color: #0f766e;
+}
+
+.prefs--light .prefs__sub,
+.prefs--light .prefs__option span {
+  color: #64748b;
+}
+
+.prefs--light .prefs__option {
+  background: #f8fafc;
+  border-color: rgba(15, 23, 42, 0.1);
+  color: #0f172a;
+}
+
+.prefs--light .prefs__option.is-selected {
+  border-color: var(--cm-accent);
+  background: #ecfdf5;
+}
+
+.prefs--light .prefs__ghost,
+.prefs--light .prefs__secondary {
+  background: transparent;
+  color: #334155;
+  border-color: rgba(15, 23, 42, 0.12);
+}

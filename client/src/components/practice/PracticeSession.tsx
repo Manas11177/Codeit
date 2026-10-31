@@ -1,4 +1,13 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  notifyCatQuizAnswer,
+  notifyCatQuizFinished,
+  nudgeCatAfterTimerClear,
+} from '../../cat/catEngine'
+import {
+  reportQuestionTimer,
+  setQuestionTimerRunning,
+} from '../../cat/questionTimerGate'
 import { runPlaygroundCode } from '../../api/playground'
 import {
   ACTIVITY_LABELS,
@@ -16,8 +25,18 @@ import {
   recordPracticeResult,
   type PracticeSource,
 } from '../../utils/lessonProgress'
+import { useCelebration } from '../../context/CelebrationContext'
 import { CodeEditor } from '../editor/CodeEditor'
 import './PracticeSession.css'
+
+/** Seconds allowed per timed question (mcq / fill / order only). */
+export const QUESTION_TIME_LIMITS = {
+  mcq: { easy: 30, medium: 40, hard: 50 },
+  fill: { easy: 45, medium: 60, hard: 75 },
+  order: { easy: 60, medium: 90, hard: 120 },
+} as const
+
+type TimedKind = keyof typeof QUESTION_TIME_LIMITS
 
 export type AnswerHandler = (correct: boolean, usedHint: boolean) => void
 
@@ -25,6 +44,7 @@ type Result = {
   question: PracticeQuestion
   correct: boolean
   usedHint: boolean
+  timedOut?: boolean
 }
 
 type PracticeSessionProps = {
@@ -49,14 +69,31 @@ export function PracticeSession({
   const [index, setIndex] = useState(0)
   const [results, setResults] = useState<Result[]>([])
   const [answered, setAnswered] = useState(false)
+  const [timedOut, setTimedOut] = useState(false)
+  const answeredRef = useRef(false)
 
   const finished = index >= questions.length
   const question = questions[index]
+  const isTimed =
+    question != null &&
+    (question.kind === 'mcq' || question.kind === 'fill' || question.kind === 'order')
 
-  function handleAnswer(correct: boolean, usedHint: boolean) {
-    if (answered || !question) return
+  useEffect(() => {
+    const running = Boolean(isTimed && !answered && !finished)
+    setQuestionTimerRunning(running)
+    if (!running) nudgeCatAfterTimerClear()
+    return () => setQuestionTimerRunning(false)
+  }, [isTimed, answered, finished])
+
+  function handleAnswer(correct: boolean, usedHint: boolean, fromTimeout = false) {
+    if (answeredRef.current || !question) return
+    answeredRef.current = true
     setAnswered(true)
-    setResults((prev) => [...prev, { question, correct, usedHint }])
+    if (fromTimeout) setTimedOut(true)
+    setResults((prev) => [
+      ...prev,
+      { question, correct, usedHint, timedOut: fromTimeout || undefined },
+    ])
     recordPracticeResult({
       questionId: question.baseId,
       lessonId: question.lessonId,
@@ -67,10 +104,17 @@ export function PracticeSession({
       usedHint,
       source,
     })
+    notifyCatQuizAnswer({ correct, timedOut: fromTimeout })
+  }
+
+  function handleTimeout() {
+    handleAnswer(false, false, true)
   }
 
   function goNext() {
+    answeredRef.current = false
     setAnswered(false)
+    setTimedOut(false)
     setIndex((i) => i + 1)
   }
 
@@ -122,6 +166,7 @@ export function PracticeSession({
         {finished ? (
           <PracticeSummary
             results={results}
+            source={source}
             onExit={onExit}
             onNewSet={onNewSet}
           />
@@ -138,14 +183,36 @@ export function PracticeSession({
             </div>
             <p className="ps-focus">🎯 {question.focus}</p>
 
+            {isTimed ? (
+              <QuestionTimer
+                totalSeconds={
+                  QUESTION_TIME_LIMITS[question.kind as TimedKind][question.difficulty]
+                }
+                paused={answered}
+                onTimeout={handleTimeout}
+              />
+            ) : null}
+
             {question.kind === 'mcq' ? (
-              <McqView question={question} onAnswer={handleAnswer} />
+              <McqView
+                question={question}
+                onAnswer={handleAnswer}
+                timedOut={timedOut}
+              />
             ) : null}
             {question.kind === 'fill' ? (
-              <FillView question={question} onAnswer={handleAnswer} />
+              <FillView
+                question={question}
+                onAnswer={handleAnswer}
+                timedOut={timedOut}
+              />
             ) : null}
             {question.kind === 'order' ? (
-              <OrderView question={question} onAnswer={handleAnswer} />
+              <OrderView
+                question={question}
+                onAnswer={handleAnswer}
+                timedOut={timedOut}
+              />
             ) : null}
             {question.kind === 'code' ? (
               <CodeView question={question} onAnswer={handleAnswer} />
@@ -188,6 +255,75 @@ function PracticeHeader({
   )
 }
 
+function formatClock(total: number) {
+  const s = Math.max(0, total)
+  const m = Math.floor(s / 60)
+  const sec = s % 60
+  return m > 0 ? `${m}:${sec.toString().padStart(2, '0')}` : `${sec}s`
+}
+
+export function QuestionTimer({
+  totalSeconds,
+  paused,
+  onTimeout,
+}: {
+  totalSeconds: number
+  paused: boolean
+  onTimeout: () => void
+}) {
+  const [remaining, setRemaining] = useState(totalSeconds)
+  const firedRef = useRef(false)
+  const onTimeoutRef = useRef(onTimeout)
+  onTimeoutRef.current = onTimeout
+
+  useEffect(() => {
+    firedRef.current = false
+    setRemaining(totalSeconds)
+  }, [totalSeconds])
+
+  useEffect(() => {
+    reportQuestionTimer(remaining, !paused)
+  }, [remaining, paused])
+
+  useEffect(() => {
+    if (paused) return
+
+    const startedAt = Date.now()
+    const id = window.setInterval(() => {
+      const left = Math.max(
+        0,
+        totalSeconds - Math.floor((Date.now() - startedAt) / 1000),
+      )
+      setRemaining(left)
+      if (left === 0 && !firedRef.current) {
+        firedRef.current = true
+        onTimeoutRef.current()
+      }
+    }, 250)
+
+    return () => window.clearInterval(id)
+  }, [totalSeconds, paused])
+
+  const ratio = totalSeconds > 0 ? remaining / totalSeconds : 0
+  const urgency =
+    remaining <= 10 ? 'is-red' : ratio < 0.5 ? 'is-amber' : ''
+
+  return (
+    <div className={`ps-timer ${urgency}`} role="timer" aria-live="polite">
+      <div className="ps-timer__row">
+        <span>Time left</span>
+        <strong>{formatClock(remaining)}</strong>
+      </div>
+      <div className="ps-timer__track">
+        <div
+          className="ps-timer__fill"
+          style={{ width: `${Math.round(ratio * 100)}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
 function Feedback({
   correct,
   note,
@@ -211,14 +347,17 @@ function Feedback({
 export function McqView({
   question,
   onAnswer,
+  timedOut = false,
 }: {
   question: McqQuestion
   onAnswer: AnswerHandler
+  timedOut?: boolean
 }) {
   const [picked, setPicked] = useState<number | null>(null)
+  const done = picked !== null || timedOut
 
   function choose(i: number) {
-    if (picked !== null) return
+    if (done) return
     setPicked(i)
     onAnswer(i === question.answerIndex, false)
   }
@@ -229,21 +368,20 @@ export function McqView({
       {question.code ? <pre className="ps-code">{question.code}</pre> : null}
       <div className="ps-options">
         {question.options.map((option, i) => {
-          const state =
-            picked === null
-              ? ''
-              : i === question.answerIndex
-                ? 'is-correct'
-                : i === picked
-                  ? 'is-wrong'
-                  : 'is-dim'
+          const state = !done
+            ? ''
+            : i === question.answerIndex
+              ? 'is-correct'
+              : i === picked
+                ? 'is-wrong'
+                : 'is-dim'
           return (
             <button
               key={i}
               type="button"
               className={`ps-option ${state}`}
               onClick={() => choose(i)}
-              disabled={picked !== null}
+              disabled={done}
             >
               <span className="ps-option__letter">{String.fromCharCode(65 + i)}</span>
               {question.optionsAreCode ? <pre>{option}</pre> : <span>{option}</span>}
@@ -251,10 +389,16 @@ export function McqView({
           )
         })}
       </div>
-      {picked !== null ? (
+      {done ? (
         <Feedback
-          correct={picked === question.answerIndex}
-          note={question.optionNotes[picked]}
+          correct={!timedOut && picked === question.answerIndex}
+          note={
+            timedOut
+              ? 'Time ran out — counted as incorrect.'
+              : picked !== null
+                ? question.optionNotes[picked]
+                : null
+          }
           explanation={question.explanation}
         />
       ) : null}
@@ -267,22 +411,26 @@ export function McqView({
 export function FillView({
   question,
   onAnswer,
+  timedOut = false,
 }: {
   question: FillQuestion
   onAnswer: AnswerHandler
+  timedOut?: boolean
 }) {
   const [inputs, setInputs] = useState<string[]>(() => question.answers.map(() => ''))
   const [checked, setChecked] = useState<boolean[] | null>(null)
   const activeBlank = useRef(0)
 
   const parts = useMemo(() => question.template.split(/\{\{(\d+)\}\}/), [question.template])
+  const done = checked !== null || timedOut
+  const blankStates = checked ?? (timedOut ? question.answers.map(() => false) : null)
 
   function setBlank(i: number, value: string) {
     setInputs((prev) => prev.map((v, j) => (j === i ? value : v)))
   }
 
   function insertWord(word: string) {
-    if (checked) return
+    if (done) return
     const target =
       inputs[activeBlank.current] === ''
         ? activeBlank.current
@@ -291,6 +439,7 @@ export function FillView({
   }
 
   function check() {
+    if (done) return
     const result = checkFillAnswers(question, inputs)
     setChecked(result)
     onAnswer(result.every(Boolean), false)
@@ -303,14 +452,18 @@ export function FillView({
         {parts.map((part, i) => {
           if (i % 2 === 0) return <span key={i}>{part}</span>
           const blank = Number(part)
-          const state = checked ? (checked[blank] ? 'is-correct' : 'is-wrong') : ''
+          const state = blankStates
+            ? blankStates[blank]
+              ? 'is-correct'
+              : 'is-wrong'
+            : ''
           return (
             <input
               key={i}
               className={`ps-blank ${state}`}
               value={inputs[blank]}
               size={Math.max(question.answers[blank].length + 1, 4)}
-              disabled={Boolean(checked)}
+              disabled={done}
               onFocus={() => {
                 activeBlank.current = blank
               }}
@@ -332,7 +485,7 @@ export function FillView({
               type="button"
               className="ps-word"
               onClick={() => insertWord(word)}
-              disabled={Boolean(checked)}
+              disabled={done}
             >
               {word}
             </button>
@@ -342,7 +495,7 @@ export function FillView({
         <p className="ps-subtle">Hard mode: no word bank — type each missing piece.</p>
       )}
 
-      {!checked ? (
+      {!done ? (
         <button
           type="button"
           className="ps-btn ps-btn--primary"
@@ -353,11 +506,13 @@ export function FillView({
         </button>
       ) : (
         <Feedback
-          correct={checked.every(Boolean)}
+          correct={Boolean(checked?.every(Boolean))}
           note={
-            checked.every(Boolean)
-              ? null
-              : `Missing piece${question.answers.length > 1 ? 's' : ''}: ${question.answers.join('  ·  ')}`
+            timedOut
+              ? `Time ran out — counted as incorrect. Missing piece${question.answers.length > 1 ? 's' : ''}: ${question.answers.join('  ·  ')}`
+              : checked?.every(Boolean)
+                ? null
+                : `Missing piece${question.answers.length > 1 ? 's' : ''}: ${question.answers.join('  ·  ')}`
           }
           explanation={question.explanation}
         />
@@ -371,14 +526,21 @@ export function FillView({
 export function OrderView({
   question,
   onAnswer,
+  timedOut = false,
 }: {
   question: OrderQuestion
   onAnswer: AnswerHandler
+  timedOut?: boolean
 }) {
+  const solutionIndices = new Set(question.blocks.flat())
+  const hasDistractors = question.lines.some((_, index) => !solutionIndices.has(index))
   const [order, setOrder] = useState<number[]>(question.shuffledOrder)
+  const [unused, setUnused] = useState<number[]>([])
   const [result, setResult] = useState<boolean | null>(null)
+  const done = result !== null || timedOut
 
   function move(position: number, delta: number) {
+    if (done) return
     const target = position + delta
     if (target < 0 || target >= order.length) return
     setOrder((prev) => {
@@ -388,7 +550,22 @@ export function OrderView({
     })
   }
 
+  function leaveOut(position: number) {
+    if (done) return
+    const lineIndex = order[position]
+    setOrder((prev) => prev.filter((_, index) => index !== position))
+    setUnused((prev) => [...prev, lineIndex])
+  }
+
+  function useLine(unusedPosition: number) {
+    if (done) return
+    const lineIndex = unused[unusedPosition]
+    setUnused((prev) => prev.filter((_, index) => index !== unusedPosition))
+    setOrder((prev) => [...prev, lineIndex])
+  }
+
   function check() {
+    if (done) return
     const correct = isOrderCorrect(question, order)
     setResult(correct)
     onAnswer(correct, false)
@@ -406,7 +583,7 @@ export function OrderView({
               <button
                 type="button"
                 onClick={() => move(position, -1)}
-                disabled={result !== null || position === 0}
+                disabled={done || position === 0}
                 aria-label="Move up"
               >
                 ↑
@@ -414,26 +591,70 @@ export function OrderView({
               <button
                 type="button"
                 onClick={() => move(position, 1)}
-                disabled={result !== null || position === order.length - 1}
+                disabled={done || position === order.length - 1}
                 aria-label="Move down"
               >
                 ↓
               </button>
+              {hasDistractors ? (
+                <button
+                  type="button"
+                  className="ps-order__leave"
+                  onClick={() => leaveOut(position)}
+                  disabled={done}
+                  aria-label="Leave this line out"
+                >
+                  Leave out
+                </button>
+              ) : null}
             </div>
           </li>
         ))}
       </ol>
+      {hasDistractors ? (
+        <div className="ps-order-unused">
+          <p className="ps-order-unused__label">Not part of the answer</p>
+          {unused.length === 0 ? (
+            <p className="ps-subtle">Nothing left out yet.</p>
+          ) : (
+            <ul className="ps-order">
+              {unused.map((lineIndex, position) => (
+                <li key={lineIndex} className="ps-order__item">
+                  <pre>{question.lines[lineIndex]}</pre>
+                  <div className="ps-order__controls">
+                    <button
+                      type="button"
+                      className="ps-order__leave"
+                      onClick={() => useLine(position)}
+                      disabled={done}
+                      aria-label="Put this line back into the answer"
+                    >
+                      Use
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
       <p className="ps-subtle">
-        {question.mode === 'pieces'
-          ? 'Read the pieces from top to bottom — together they make the code. Use ↑ and ↓ to move them.'
-          : 'Indentation is kept to help you spot which lines belong inside a block.'}
+        {hasDistractors
+          ? 'Keep only the lines that belong, in the order they run. Move the others into “Not part of the answer”.'
+          : question.mode === 'pieces'
+            ? 'Read the pieces from top to bottom — together they make the code. Use ↑ and ↓ to move them.'
+            : 'Indentation is kept to help you spot which lines belong inside a block.'}
       </p>
-      {result === null ? (
+      {!done ? (
         <button type="button" className="ps-btn ps-btn--primary" onClick={check}>
           Check order
         </button>
       ) : (
-        <Feedback correct={result} explanation={question.explanation} />
+        <Feedback
+          correct={result === true}
+          note={timedOut ? 'Time ran out — counted as incorrect.' : null}
+          explanation={question.explanation}
+        />
       )}
     </div>
   )
@@ -587,27 +808,50 @@ function CodeView({
 
 function PracticeSummary({
   results,
+  source,
   onExit,
   onNewSet,
 }: {
   results: Result[]
+  source: PracticeSource
   onExit: () => void
   onNewSet?: () => void
 }) {
+  const { showCelebration } = useCelebration()
+  const perfectFiredRef = useRef(false)
   const correct = results.filter((r) => r.correct).length
+  const timedOutCount = results.filter((r) => r.timedOut).length
   const score = results.length ? Math.round((correct / results.length) * 100) : 0
   const toReview = [
     ...new Set(results.filter((r) => !r.correct).map((r) => r.question.subtopic)),
   ]
-  const byKind = Object.entries(
-    results.reduce<Record<string, { total: number; correct: number }>>((acc, r) => {
-      const entry = acc[r.question.kind] ?? { total: 0, correct: 0 }
-      entry.total += 1
-      if (r.correct) entry.correct += 1
-      acc[r.question.kind] = entry
-      return acc
-    }, {}),
-  )
+  const kindCounts = results.reduce<Record<string, { total: number; correct: number }>>((acc, r) => {
+    const entry = acc[r.question.kind] ?? { total: 0, correct: 0 }
+    entry.total += 1
+    if (r.correct) entry.correct += 1
+    acc[r.question.kind] = entry
+    return acc
+  }, {})
+  const byKind =
+    source === 'chapter-quiz'
+      ? (['mcq', 'fill', 'order'] as const).map(
+          (kind) => [kind, kindCounts[kind] ?? { total: 0, correct: 0 }] as const,
+        )
+      : Object.entries(kindCounts)
+
+  useEffect(() => {
+    notifyCatQuizFinished(score)
+  }, [score])
+
+  useEffect(() => {
+    if (score !== 100 || results.length === 0 || perfectFiredRef.current) return
+    perfectFiredRef.current = true
+    showCelebration({
+      icon: '🥇',
+      title: 'Perfect score!',
+      message: '100% — every question correct. Gold-star run!',
+    })
+  }, [score, results.length, showCelebration])
 
   return (
     <div className="ps-card ps-summary">
@@ -615,6 +859,9 @@ function PracticeSummary({
         <strong>{score}%</strong>
         <span>
           {correct} of {results.length} correct
+          {timedOutCount > 0
+            ? ` · ${timedOutCount} timed out`
+            : ''}
         </span>
       </div>
       <p className="ps-summary__message">

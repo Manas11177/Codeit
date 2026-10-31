@@ -12,6 +12,7 @@ import {
   CelebrationPopup,
   type CelebrationContent,
 } from '../components/celebration/CelebrationPopup'
+import { getGoodieStatuses } from '../rewards/goodies'
 import {
   MEDAL_EMOJI,
   STATS_UPDATED_EVENT,
@@ -116,16 +117,25 @@ function seedExistingProgress(userId: string | null) {
   const seedKey = `seeded:${userId ?? 'anon'}`
   if (hasShown(userId, seedKey)) return
 
+  const streak = computeStreak(getActivityDates())
+  const unlocked = getAchievements().filter((item) => item.unlocked)
+  const unlockedGoodies = getGoodieStatuses().filter((item) => item.unlocked)
+  // Defer seeding until progress exists so a later cloud sync isn't treated as "new" unlocks.
+  if (streak === 0 && unlocked.length === 0 && unlockedGoodies.length === 0) return
+
   const shown = readShown(userId)
   shown.add(seedKey)
 
-  const streak = computeStreak(getActivityDates())
   for (const milestone of STREAK_MILESTONES) {
     if (streak >= milestone.days) shown.add(`streak-${milestone.days}`)
   }
 
-  for (const achievement of getAchievements()) {
-    if (achievement.unlocked) shown.add(`achievement:${achievement.id}`)
+  for (const achievement of unlocked) {
+    shown.add(`achievement:${achievement.id}`)
+  }
+
+  for (const goodie of unlockedGoodies) {
+    shown.add(`reward:${goodie.id}`)
   }
 
   writeShown(userId, shown)
@@ -216,6 +226,19 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
           icon: MEDAL_EMOJI[achievement.tier],
           title: achievement.title,
           message: `${achievement.description} ${MEDAL_EMOJI[achievement.tier]} ${achievement.tier} medal unlocked!`,
+        })
+      }
+
+      for (const goodie of getGoodieStatuses()) {
+        if (!goodie.unlocked) continue
+        const id = `reward:${goodie.id}`
+        if (hasShown(uid, id)) continue
+        markShown(uid, id)
+        showCelebration({
+          id,
+          icon: goodie.icon,
+          title: goodie.name,
+          message: `${goodie.description} Unlocked!`,
         })
       }
     }

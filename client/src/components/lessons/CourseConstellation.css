@@ -1,0 +1,249 @@
+.cc {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  color: #e2e8f0;
+}
+
+.cc__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 0.95rem;
+}
+
+.cc__eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7dd3fc;
+}
+
+.cc__head h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+}
+
+.cc__count {
+  margin: 0;
+  font-size: 0.92rem;
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.cc__sky {
+  position: relative;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background:
+    radial-gradient(ellipse 70% 55% at 20% 10%, rgba(56, 189, 248, 0.12), transparent 55%),
+    radial-gradient(ellipse 55% 45% at 85% 20%, rgba(167, 139, 250, 0.1), transparent 50%),
+    linear-gradient(180deg, #070b16 0%, #05070f 55%, #04060c 100%);
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  min-height: 420px;
+}
+
+.cc__brand {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.9rem;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+  pointer-events: none;
+}
+
+.cc__wordmark {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(248, 250, 252, 0.78);
+  font-family: 'Instrument Serif', Georgia, serif;
+}
+
+.cc__learner {
+  font-size: 0.72rem;
+  color: rgba(186, 230, 253, 0.8);
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cc__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 720px;
+}
+
+.cc__empty {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 1rem;
+  margin: 0;
+  text-align: center;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: rgba(226, 232, 240, 0.68);
+  pointer-events: none;
+}
+
+.cc-dust {
+  fill: rgba(255, 255, 255, 0.28);
+}
+
+.cc-line {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.cc-line--trunk {
+  stroke: rgba(186, 230, 253, 0.28);
+  stroke-width: 1.6;
+}
+
+.cc-line--branch {
+  stroke: rgba(148, 163, 184, 0.2);
+  stroke-width: 1;
+}
+
+.cc-line.is-faint,
+.cc-chapter.is-faint .cc-chapter__base,
+.cc-chapter.is-faint .cc-chapter__halo,
+.cc-topic.is-faint .cc-topic__core {
+  opacity: 0.35;
+}
+
+.cc-chapter__halo {
+  fill: rgba(125, 211, 252, 0.08);
+}
+
+.cc-chapter__base {
+  fill: rgba(30, 41, 59, 0.95);
+  stroke: rgba(148, 163, 184, 0.45);
+  stroke-width: 1.2;
+}
+
+.cc-chapter__fill {
+  fill: #7dd3fc;
+}
+
+.cc-chapter__label {
+  fill: rgba(248, 250, 252, 0.92);
+  font-size: 12px;
+  font-weight: 650;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  pointer-events: none;
+}
+
+.cc-topic {
+  outline: none;
+}
+
+.cc-topic:focus-visible .cc-topic__core {
+  stroke: #f8fafc;
+  stroke-width: 1.4;
+}
+
+.cc-topic.is-done .cc-topic__core {
+  fill: #fde68a;
+}
+
+.cc-topic.is-current .cc-topic__core {
+  fill: #e0f2fe;
+}
+
+.cc-topic.is-dim .cc-topic__core {
+  fill: rgba(148, 163, 184, 0.45);
+}
+
+.cc-topic.is-current .cc-topic__glow {
+  animation: cc-pulse 2.4s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.cc-legend {
+  list-style: none;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1rem;
+  font-size: 0.78rem;
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.cc-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cc-legend__swatch {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.cc-legend__swatch--done {
+  background: #fde68a;
+  box-shadow: 0 0 8px rgba(253, 230, 138, 0.7);
+}
+
+.cc-legend__swatch--current {
+  background: #e0f2fe;
+  box-shadow: 0 0 8px rgba(125, 211, 252, 0.8);
+}
+
+.cc-legend__swatch--dim {
+  background: rgba(148, 163, 184, 0.45);
+}
+
+.cc-legend__swatch--chapter {
+  background: linear-gradient(180deg, #7dd3fc 55%, #1e293b 55%);
+  border: 1px solid rgba(148, 163, 184, 0.5);
+}
+
+@keyframes cc-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-topic.is-current .cc-topic__glow {
+    animation: none;
+    opacity: 0.85;
+  }
+}
+
+@media (max-width: 720px) {
+  .cc__svg {
+    max-height: none;
+  }
+
+  .cc__sky {
+    min-height: 0;
+  }
+
+  .cc-chapter__label {
+    font-size: 10px;
+  }
+}

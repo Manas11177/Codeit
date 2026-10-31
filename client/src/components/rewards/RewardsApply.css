@@ -1,0 +1,5 @@
+html[data-accent-theme='accent-theme'] .lessons-home-link:hover,
+html[data-accent-theme='accent-theme'] a:hover {
+  border-color: var(--cm-accent, #e11d48);
+  color: var(--cm-accent, #e11d48);
+}

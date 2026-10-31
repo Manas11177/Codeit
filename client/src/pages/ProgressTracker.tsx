@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { PracticeSession } from '../components/practice/PracticeSession'
+import { ProgressGraphs } from '../components/progress/ProgressGraphs'
 import { useLearningInsights } from '../hooks/useLearningInsights'
 import {
   getLearningInsights,
@@ -131,6 +132,8 @@ export function ProgressTracker() {
           />
           <StatTile label="Streak" value={`${totals.streak} 🔥`} sub="days in a row" />
         </section>
+
+        <ProgressGraphs />
 
         {!insights.hasData ? (
           <section className="pt-card pt-empty">

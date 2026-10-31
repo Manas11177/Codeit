@@ -54,12 +54,41 @@ export type WarmupHistory = {
   recent: string[]
 }
 
-type ProgressStore = {
+export type PreferenceGoal = 'job' | 'college' | 'hobby'
+export type PreferenceExperience = 'never' | 'some' | 'comfortable'
+export type PreferenceDailyMinutes = 10 | 20 | 30
+
+export type UserPreferences = {
+  goal?: PreferenceGoal
+  experience?: PreferenceExperience
+  dailyMinutes?: PreferenceDailyMinutes
+  skipped?: boolean
+  updatedAt: string
+}
+
+/** Selected cosmetic rewards only — unlock state is computed from progress. */
+export type UserRewards = {
+  avatarFrameId?: string | null
+  accentThemeId?: string | null
+  updatedAt: string
+}
+
+/** Display name + avatar icon; email is never stored here. */
+export type UserProfile = {
+  displayName?: string | null
+  avatarId?: string | null
+  updatedAt: string
+}
+
+export type ProgressStore = {
   completed: Record<string, string[]>
   activityDates: string[]
   performance: Record<string, TopicPerformance>
   practice: PracticeRecord[]
   warmups: Record<string, WarmupHistory>
+  preferences?: UserPreferences | null
+  rewards?: UserRewards | null
+  profile?: UserProfile | null
 }
 
 const MAX_PRACTICE_RECORDS = 600
@@ -71,7 +100,16 @@ function storageKey(userId: string | null) {
 }
 
 function emptyStore(): ProgressStore {
-  return { completed: {}, activityDates: [], performance: {}, practice: [], warmups: {} }
+  return {
+    completed: {},
+    activityDates: [],
+    performance: {},
+    practice: [],
+    warmups: {},
+    preferences: null,
+    rewards: null,
+    profile: null,
+  }
 }
 
 function readStore(): ProgressStore {
@@ -85,6 +123,9 @@ function readStore(): ProgressStore {
       performance: parsed.performance ?? {},
       practice: parsed.practice ?? [],
       warmups: parsed.warmups ?? {},
+      preferences: parsed.preferences ?? null,
+      rewards: parsed.rewards ?? null,
+      profile: parsed.profile ?? null,
     }
   } catch {
     return emptyStore()
@@ -120,6 +161,157 @@ export function setProgressUserId(userId: string | null) {
 
 export function getProgressUserId() {
   return activeUserId
+}
+
+/** Snapshot of the active user's local progress blob (for cloud sync). */
+export function getProgressStoreSnapshot(): ProgressStore {
+  return readStore()
+}
+
+/** Replace the active user's local progress blob (used after cloud merge). */
+export function replaceProgressStoreSnapshot(store: ProgressStore) {
+  writeStore({
+    completed: store.completed ?? {},
+    activityDates: store.activityDates ?? [],
+    performance: store.performance ?? {},
+    practice: store.practice ?? [],
+    warmups: store.warmups ?? {},
+    preferences: store.preferences ?? null,
+    rewards: store.rewards ?? null,
+    profile: store.profile ?? null,
+  })
+}
+
+export function getPreferences(): UserPreferences | null {
+  return readStore().preferences ?? null
+}
+
+/** True once the user saved answers or explicitly skipped. */
+export function hasPreferencesDecision(): boolean {
+  const prefs = getPreferences()
+  if (!prefs?.updatedAt) return false
+  if (prefs.skipped) return true
+  return Boolean(prefs.goal && prefs.experience && prefs.dailyMinutes)
+}
+
+export function savePreferences(
+  input: Omit<UserPreferences, 'updatedAt' | 'skipped'> & { skipped?: false },
+) {
+  const store = readStore()
+  store.preferences = {
+    goal: input.goal,
+    experience: input.experience,
+    dailyMinutes: input.dailyMinutes,
+    skipped: false,
+    updatedAt: new Date().toISOString(),
+  }
+  writeStore(store)
+}
+
+export function skipPreferences() {
+  const store = readStore()
+  store.preferences = {
+    skipped: true,
+    updatedAt: new Date().toISOString(),
+  }
+  writeStore(store)
+}
+
+export function getRewardsSelection(): UserRewards | null {
+  return readStore().rewards ?? null
+}
+
+export function saveRewardsSelection(input: {
+  avatarFrameId?: string | null
+  accentThemeId?: string | null
+}) {
+  const store = readStore()
+  const prev = store.rewards
+  store.rewards = {
+    avatarFrameId:
+      input.avatarFrameId !== undefined
+        ? input.avatarFrameId
+        : (prev?.avatarFrameId ?? null),
+    accentThemeId:
+      input.accentThemeId !== undefined
+        ? input.accentThemeId
+        : (prev?.accentThemeId ?? null),
+    updatedAt: new Date().toISOString(),
+  }
+  writeStore(store)
+}
+
+export function getProfile(): UserProfile | null {
+  return readStore().profile ?? null
+}
+
+/** Default display name from email local-part; never persists email. */
+export function defaultDisplayNameFromEmail(email: string | null | undefined) {
+  if (!email) return 'Learner'
+  const local = email.split('@')[0]?.trim()
+  if (!local) return 'Learner'
+  return local
+}
+
+export function getDisplayName(email?: string | null) {
+  const saved = getProfile()?.displayName?.trim()
+  if (saved) return saved
+  return defaultDisplayNameFromEmail(email)
+}
+
+export function saveProfile(input: {
+  displayName?: string | null
+  avatarId?: string | null
+}) {
+  const store = readStore()
+  const prev = store.profile
+  let displayName =
+    input.displayName !== undefined ? input.displayName : (prev?.displayName ?? null)
+  if (typeof displayName === 'string') {
+    displayName = displayName.trim()
+    if (displayName.length < 2 || displayName.length > 20) {
+      displayName = prev?.displayName ?? null
+    }
+  }
+  store.profile = {
+    displayName,
+    avatarId:
+      input.avatarId !== undefined ? input.avatarId : (prev?.avatarId ?? null),
+    updatedAt: new Date().toISOString(),
+  }
+  writeStore(store)
+}
+
+/** Suggested first lesson id from experience preference (Continue card). */
+export function getPreferredStartLessonId(): string {
+  const experience = getPreferences()?.experience
+  if (experience === 'comfortable') return 'conditions'
+  if (experience === 'some') return 'variables'
+  return 'python-basics'
+}
+
+export const START_LESSON_KEY = 'codementor-start-lesson'
+export const START_SUBTOPIC_KEY = 'codementor-start-subtopic'
+
+export function queueStartLesson(lessonId: string, subtopic?: string) {
+  sessionStorage.setItem(START_LESSON_KEY, lessonId)
+  if (subtopic) {
+    sessionStorage.setItem(START_SUBTOPIC_KEY, subtopic)
+  } else {
+    sessionStorage.removeItem(START_SUBTOPIC_KEY)
+  }
+}
+
+export function consumeStartLesson(): string | null {
+  const id = sessionStorage.getItem(START_LESSON_KEY)
+  sessionStorage.removeItem(START_LESSON_KEY)
+  return id
+}
+
+export function consumeStartSubtopic(): string | null {
+  const subtopic = sessionStorage.getItem(START_SUBTOPIC_KEY)
+  sessionStorage.removeItem(START_SUBTOPIC_KEY)
+  return subtopic
 }
 
 export type AchievementTier = 'bronze' | 'silver' | 'gold'
@@ -169,6 +361,32 @@ export function computeStreak(activityDates: string[]) {
 
   return streak
 }
+
+/** Longest run of consecutive calendar days in activityDates (not persisted). */
+export function computeLongestStreak(activityDates: string[]) {
+  if (activityDates.length === 0) return 0
+
+  const sorted = [...new Set(activityDates)].sort()
+  let best = 1
+  let run = 1
+
+  for (let i = 1; i < sorted.length; i += 1) {
+    const prev = new Date(`${sorted[i - 1]}T00:00:00`)
+    const curr = new Date(`${sorted[i]}T00:00:00`)
+    const gap = Math.round((curr.getTime() - prev.getTime()) / 86_400_000)
+    if (gap === 1) {
+      run += 1
+      best = Math.max(best, run)
+    } else {
+      run = 1
+    }
+  }
+
+  return best
+}
+
+/** Streak medal milestones (display only — same targets as celebrations). */
+export const STREAK_MEDAL_MILESTONES = [1, 3, 7, 14, 30] as const
 
 export function getCompletedLessonCount() {
   const store = readStore()

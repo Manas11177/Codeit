@@ -13,6 +13,11 @@ body,
   min-height: 100vh;
 }
 
+.app-shell--with-footer {
+  display: flex;
+  flex-direction: column;
+}
+
 .app-shell--loading {
   display: grid;
   place-items: center;

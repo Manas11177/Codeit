@@ -2,7 +2,15 @@ import { supabase } from '../lib/supabase'
 
 export const AUTH_REDIRECT_KEY = 'codementor_auth_redirect'
 
-const PROTECTED_PATHS = ['/lessons', '/virtual-editor', '/progress'] as const
+const PROTECTED_PATHS = [
+  '/lessons',
+  '/virtual-editor',
+  '/progress',
+  '/streak',
+  '/rewards',
+  '/course-map',
+  '/constellation',
+] as const
 
 export type ProtectedPath = (typeof PROTECTED_PATHS)[number]
 

@@ -1,0 +1,305 @@
+.rw {
+  position: relative;
+  min-height: 100vh;
+  padding: 28px 6% 90px;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+.rw--dark {
+  background: #05070b;
+  color: #f8fafc;
+}
+
+.rw--light {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.rw__glow {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 420px;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 65% at 10% 0%, rgba(234, 179, 8, 0.16), transparent 60%),
+    radial-gradient(ellipse 45% 55% at 92% 10%, rgba(14, 165, 233, 0.12), transparent 60%);
+}
+
+.rw__shell {
+  position: relative;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.rw-nav {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 1.8rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.rw-nav__avatar {
+  margin-left: auto;
+}
+
+.rw-cert__avatar {
+  display: flex;
+  justify-content: center;
+  margin: 0.75rem 0 1rem;
+}
+
+.rw-nav button {
+  border-radius: 999px;
+  padding: 0.5rem 1.1rem;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.rw--dark .rw-nav button {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.rw--light .rw-nav button {
+  background: rgba(255, 255, 255, 0.7);
+  color: #0f172a;
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+.rw-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--cm-accent, #ca8a04);
+}
+
+.rw-hero {
+  max-width: 640px;
+  margin-bottom: 1.6rem;
+}
+
+.rw-hero h1 {
+  margin: 0.45rem 0 0.6rem;
+  font-size: clamp(2rem, 4vw, 2.7rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.rw-hero p,
+.rw-lead {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  opacity: 0.75;
+}
+
+.rw-empty {
+  margin-bottom: 1.4rem;
+  padding: 1.1rem 1.25rem;
+  border-radius: 16px;
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+}
+
+.rw-empty p {
+  margin: 0 0 0.75rem;
+  opacity: 0.8;
+}
+
+.rw-empty button {
+  border: none;
+  background: transparent;
+  color: var(--cm-accent, #ca8a04);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+
+.rw-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.rw-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  border-radius: 18px;
+  border: 1px solid transparent;
+}
+
+.rw--dark .rw-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.rw--light .rw-card {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(15, 23, 42, 0.06);
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.06);
+}
+
+.rw-card.is-locked {
+  opacity: 0.55;
+  filter: grayscale(0.85);
+}
+
+.rw-card__icon {
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  font-size: 1.6rem;
+  border-radius: 14px;
+  background: rgba(234, 179, 8, 0.12);
+}
+
+.rw-card__body h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.15rem;
+}
+
+.rw-card__body > p {
+  margin: 0 0 0.85rem;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  opacity: 0.78;
+}
+
+.rw-card__action {
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid var(--cm-accent, #ca8a04);
+  background: var(--cm-accent, #ca8a04);
+  color: #0f172a;
+}
+
+.rw-card__action.is-active {
+  background: transparent;
+  color: inherit;
+}
+
+.rw-card__lock p {
+  margin: 0 0 0.45rem;
+  font-size: 0.85rem;
+}
+
+.rw-bar {
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(148, 163, 184, 0.25);
+}
+
+.rw-bar__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--cm-accent, #ca8a04);
+}
+
+.rw-card__progress {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  opacity: 0.7;
+}
+
+.rw-sheet,
+.rw-voucher,
+.rw-cert {
+  max-width: 640px;
+  padding: 1.5rem 0;
+}
+
+.rw-sheet h1,
+.rw-voucher h1,
+.rw-cert h1 {
+  margin: 0.4rem 0 0.6rem;
+  font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+}
+
+.rw-sheet__section {
+  margin-top: 1.4rem;
+}
+
+.rw-sheet__section h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.rw-sheet__section ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  line-height: 1.55;
+}
+
+.rw-voucher__card {
+  margin-top: 1.5rem;
+  padding: 1.4rem 1.5rem;
+  border-radius: 16px;
+  border: 2px dashed var(--cm-accent, #ca8a04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: 320px;
+}
+
+.rw-voucher__card strong {
+  letter-spacing: 0.08em;
+  font-size: 0.95rem;
+}
+
+.rw-voucher__card span {
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+
+.rw-cert {
+  text-align: center;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 20px;
+  padding: 2.5rem 1.5rem;
+  background: linear-gradient(
+    160deg,
+    rgba(234, 179, 8, 0.08),
+    transparent 55%
+  );
+}
+
+.rw-cert__name {
+  margin: 1.2rem 0 0.4rem;
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  font-weight: 800;
+  color: var(--cm-accent, #ca8a04);
+}
+
+.rw-cert__date {
+  margin-top: 1.4rem;
+  font-size: 0.95rem;
+  opacity: 0.7;
+}
+
+.rw-tip {
+  margin: 1.25rem 0 0;
+  font-size: 0.88rem;
+  opacity: 0.65;
+}
+
+@media (min-width: 720px) {
+  .rw-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

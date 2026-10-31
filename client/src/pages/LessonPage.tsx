@@ -4,6 +4,7 @@ import { PracticeSession } from '../components/practice/PracticeSession'
 import { getLearningInsights } from '../learning/adaptiveEngine'
 import { buildPracticeSet, type PracticeQuestion } from '../learning/questionGenerator'
 import {
+  consumeStartSubtopic,
   getCompletedSubtopics,
   getLessonProgress,
   getPracticeHistory,
@@ -24,7 +25,9 @@ type LessonPageProps = {
 }
 
 export function LessonPage({ lessonId, onBack }: LessonPageProps) {
-  const [activeSubtopic, setActiveSubtopic] = useState<string | null>(null)
+  const [activeSubtopic, setActiveSubtopic] = useState<string | null>(() =>
+    consumeStartSubtopic(),
+  )
   const [progressTick, setProgressTick] = useState(0)
   const [quiz, setQuiz] = useState<{ questions: PracticeQuestion[]; nonce: number } | null>(null)
   const [quizPostponed, setQuizPostponed] = useState(() => isQuizPostponed(lessonId))

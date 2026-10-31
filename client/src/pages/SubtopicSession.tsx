@@ -34,6 +34,7 @@ import {
   saveWarmupVisit,
 } from '../utils/lessonProgress'
 import { clipboardBlockProps } from '../utils/blockClipboard'
+import { requireAuth } from '../utils/navigation'
 import '../components/practice/PracticeSession.css'
 import './SubtopicSession.css'
 
@@ -354,10 +355,15 @@ export function SubtopicSession({
           <span className="lc-session__course-icon">🐍</span>
           {lessonShortTitle(lessonTitle)}
         </div>
-        <div className="lc-session__streak">
+        <button
+          type="button"
+          className="lc-session__streak"
+          onClick={() => void requireAuth('/streak')}
+          title="Open streak & medals"
+        >
           <span>🔥</span>
           <span>{stats.streak} day streak</span>
-        </div>
+        </button>
       </header>
 
       <div className={`lc-session__layout lc-session__layout--${layoutVariant}`}>

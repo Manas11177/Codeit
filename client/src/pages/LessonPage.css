@@ -9,7 +9,7 @@
   box-sizing: border-box;
   padding: 40px 7% 70px;
   background:
-    radial-gradient(ellipse 70% 45% at 10% -5%, rgba(0, 169, 157, 0.14), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 10% -5%, var(--cm-accent-soft), transparent 55%),
     radial-gradient(ellipse 50% 35% at 95% 10%, rgba(124, 58, 237, 0.1), transparent 50%),
     #050505;
   color: white;
@@ -21,7 +21,7 @@
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(circle at 50% 0%, rgba(0, 169, 157, 0.06), transparent 40%);
+  background: radial-gradient(circle at 50% 0%, rgb(var(--cm-accent-rgb) / 0.06), transparent 40%);
 }
 
 
@@ -60,7 +60,7 @@
 }
 
 .lesson-page-header span {
-  color: #00a99d;
+  color: var(--cm-accent);
 
   font-size: 14px;
 
@@ -110,7 +110,7 @@
 .lesson-progress__fill {
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #00a99d, #34d399);
+  background: linear-gradient(90deg, var(--cm-accent), color-mix(in srgb, var(--cm-accent) 55%, white));
   transition: width 0.4s ease;
 }
 
@@ -131,8 +131,8 @@
   margin: -15px 0 40px;
   padding: 1.4rem 1.6rem;
   border-radius: 18px;
-  border: 1px solid rgba(0, 169, 157, 0.4);
-  background: linear-gradient(135deg, rgba(0, 169, 157, 0.12), rgba(124, 58, 237, 0.08));
+  border: 1px solid rgb(var(--cm-accent-rgb) / 0.4);
+  background: linear-gradient(135deg, rgb(var(--cm-accent-rgb) / 0.12), rgba(124, 58, 237, 0.08));
   animation: chapter-quiz-in 0.4s ease;
 }
 
@@ -158,7 +158,7 @@
 }
 
 .chapter-quiz__eyebrow {
-  color: #5eead4;
+  color: var(--cm-accent);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 1.5px;
@@ -210,12 +210,12 @@
 
 .chapter-quiz__actions .chapter-quiz__primary {
   border-color: transparent;
-  background: linear-gradient(135deg, #00a99d, #0ea5e9);
-  color: #fff;
+  background: linear-gradient(135deg, var(--cm-accent), color-mix(in srgb, var(--cm-accent) 45%, white));
+  color: var(--cm-accent-contrast);
 }
 
 .chapter-quiz__actions .chapter-quiz__primary:hover {
-  background: linear-gradient(135deg, #00b8ab, #22b3f0);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--cm-accent) 85%, white), var(--cm-accent));
 }
 
 .subtopics-container {
@@ -239,7 +239,7 @@
 }
 
 .subtopics-flow-hint strong {
-  color: #00a99d;
+  color: var(--cm-accent);
   font-weight: 700;
 }
 
@@ -302,19 +302,19 @@
 }
 
 .subtopic-card:hover {
-  border-color: #00a99d;
+  border-color: var(--cm-accent);
   background: #101515;
   transform: translateX(5px);
 }
 
 .subtopic-card.is-complete {
-  border-color: rgba(0, 169, 157, 0.35);
-  background: linear-gradient(135deg, rgba(0, 169, 157, 0.08), rgba(13, 13, 13, 0.95));
+  border-color: rgb(var(--cm-accent-rgb) / 0.35);
+  background: linear-gradient(135deg, rgb(var(--cm-accent-rgb) / 0.08), rgba(13, 13, 13, 0.95));
 }
 
 .subtopic-card.is-complete .subtopic-number {
-  background: #00a99d;
-  color: #001;
+  background: var(--cm-accent);
+  color: var(--cm-accent-contrast);
 }
 
 .subtopic-card.is-complete .subtopic-arrow {
@@ -341,7 +341,7 @@
 
   background: #12302e;
 
-  color: #00a99d;
+  color: var(--cm-accent);
 
   font-weight: 700;
 
@@ -389,7 +389,7 @@
 }
 
 .subtopic-card:hover .subtopic-arrow {
-  color: #00a99d;
+  color: var(--cm-accent);
 }
 
 

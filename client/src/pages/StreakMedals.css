@@ -14,7 +14,7 @@
   pointer-events: none;
   background:
     radial-gradient(ellipse 55% 65% at 12% 0%, rgba(251, 146, 60, 0.18), transparent 60%),
-    radial-gradient(ellipse 45% 55% at 90% 8%, rgba(0, 169, 157, 0.14), transparent 60%);
+    radial-gradient(ellipse 45% 55% at 90% 8%, var(--cm-accent-soft), transparent 60%);
 }
 
 .sm__shell {

@@ -15,7 +15,7 @@
 }
 
 .pm__trigger:focus-visible {
-  outline: 2px solid var(--cm-accent, #38bdf8);
+  outline: 2px solid var(--cm-accent);
   outline-offset: 3px;
 }
 
@@ -169,8 +169,8 @@
   border: none;
   padding: 0.45rem 0.75rem;
   font-weight: 700;
-  background: var(--cm-accent, #0d9488);
-  color: #0f172a;
+  background: var(--cm-accent);
+  color: var(--cm-accent-contrast);
 }
 
 .pm__error {
@@ -195,8 +195,8 @@
 }
 
 .pm__chip.is-selected {
-  border-color: var(--cm-accent, #0d9488);
-  box-shadow: inset 0 0 0 1px var(--cm-accent, #0d9488);
+  border-color: var(--cm-accent);
+  box-shadow: inset 0 0 0 1px var(--cm-accent);
 }
 
 .pm__pickers {
@@ -216,7 +216,7 @@
 }
 
 .pm__pick.is-selected {
-  border-color: var(--cm-accent, #0d9488);
+  border-color: var(--cm-accent);
 }
 
 .pm__pick.is-locked {

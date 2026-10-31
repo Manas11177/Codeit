@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTheme } from '../context/ThemeContext'
 import {
+  ACCENT_THEMES,
+  normalizeAccentThemeId,
+  type AccentThemeId,
+} from '../rewards/accentThemes'
+import {
   getCheatSheetContent,
   getCheatSheetKind,
   getGoodieProgress,
@@ -54,18 +59,18 @@ export function Rewards() {
   })
   const cheat = getCheatSheetContent(getCheatSheetKind())
 
+  const activeAccent = normalizeAccentThemeId(selection?.accentThemeId)
+
   function handleUse(goodie: GoodieStatus) {
     if (goodie.id === 'avatar-frame') {
       const next =
         selection?.avatarFrameId === 'avatar-frame' ? null : 'avatar-frame'
       saveRewardsSelection({ avatarFrameId: next })
-      return
     }
-    if (goodie.id === 'accent-theme') {
-      const next =
-        selection?.accentThemeId === 'accent-theme' ? null : 'accent-theme'
-      saveRewardsSelection({ accentThemeId: next })
-    }
+  }
+
+  function selectAccent(id: AccentThemeId | null) {
+    saveRewardsSelection({ accentThemeId: id })
   }
 
   function handleView(id: GoodieId) {
@@ -78,9 +83,6 @@ export function Rewards() {
     if (goodie.action === 'view') return 'View'
     if (goodie.id === 'avatar-frame') {
       return selection?.avatarFrameId === 'avatar-frame' ? 'In use ✓' : 'Use'
-    }
-    if (goodie.id === 'accent-theme') {
-      return selection?.accentThemeId === 'accent-theme' ? 'In use ✓' : 'Use'
     }
     return 'Use'
   }
@@ -216,10 +218,8 @@ export function Rewards() {
                 ? 0
                 : Math.min(100, Math.round((goodie.current / goodie.target) * 100))
             const using =
-              (goodie.id === 'avatar-frame' &&
-                selection?.avatarFrameId === 'avatar-frame') ||
-              (goodie.id === 'accent-theme' &&
-                selection?.accentThemeId === 'accent-theme')
+              goodie.id === 'avatar-frame' &&
+              selection?.avatarFrameId === 'avatar-frame'
 
             return (
               <li
@@ -233,21 +233,48 @@ export function Rewards() {
                   <h2>{goodie.name}</h2>
                   <p>{goodie.description}</p>
                   {goodie.unlocked ? (
-                    <button
-                      type="button"
-                      className={`rw-card__action ${using ? 'is-active' : ''}`}
-                      onClick={(event) => {
-                        event.preventDefault()
-                        event.stopPropagation()
-                        if (goodie.action === 'use') {
-                          handleUse(goodie)
-                          return
-                        }
-                        handleView(goodie.id)
-                      }}
-                    >
-                      {actionLabel(goodie)}
-                    </button>
+                    goodie.id === 'accent-theme' ? (
+                      <div className="rw-accent-picks">
+                        <button
+                          type="button"
+                          className={`rw-accent-pick ${!activeAccent ? 'is-selected' : ''}`}
+                          onClick={() => selectAccent(null)}
+                        >
+                          Teal
+                        </button>
+                        {ACCENT_THEMES.map((theme) => (
+                          <button
+                            key={theme.id}
+                            type="button"
+                            className={`rw-accent-pick ${
+                              activeAccent === theme.id ? 'is-selected' : ''
+                            }`}
+                            style={{ ['--pick' as string]: theme.accent }}
+                            onClick={() => selectAccent(theme.id)}
+                          >
+                            <span aria-hidden="true">{theme.icon}</span>
+                            {theme.name}
+                            {activeAccent === theme.id ? ' ✓' : ''}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className={`rw-card__action ${using ? 'is-active' : ''}`}
+                        onClick={(event) => {
+                          event.preventDefault()
+                          event.stopPropagation()
+                          if (goodie.action === 'use') {
+                            handleUse(goodie)
+                            return
+                          }
+                          handleView(goodie.id)
+                        }}
+                      >
+                        {actionLabel(goodie)}
+                      </button>
+                    )
                   ) : (
                     <div className="rw-card__lock">
                       <p>{goodie.requirementLabel(progress)}</p>

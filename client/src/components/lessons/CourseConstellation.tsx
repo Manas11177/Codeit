@@ -203,8 +203,8 @@ export function CourseConstellation() {
           <defs>
             <radialGradient id={glowId} cx="50%" cy="50%" r="50%">
               <stop offset="0%" stopColor="#fff7c2" stopOpacity="0.95" />
-              <stop offset="55%" stopColor="#7dd3fc" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="#7dd3fc" stopOpacity="0" />
+              <stop offset="55%" stopColor="var(--cm-accent)" stopOpacity="0.55" />
+              <stop offset="100%" stopColor="var(--cm-accent)" stopOpacity="0" />
             </radialGradient>
             <filter id={softId} x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="1.6" />

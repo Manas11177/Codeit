@@ -52,9 +52,10 @@ export const REWARD_GOODIES: GoodieDef[] = [
   },
   {
     id: 'accent-theme',
-    name: 'Accent colour theme',
+    name: 'Accent colour themes',
     icon: '🎨',
-    description: 'A warmer accent colour applied across CodeMentor.',
+    description:
+      'Unlock Rose, Violet, Amber and Emerald accents you can apply across CodeMentor.',
     requirementLabel: () => 'Complete 3 topics',
     progress: (ctx) => ({ current: Math.min(ctx.topicsCompleted, 3), target: 3 }),
     isUnlocked: (ctx) => ctx.topicsCompleted >= 3,

@@ -8,6 +8,11 @@ import {
 import { useTheme } from '../../context/ThemeContext'
 import { AVATAR_PRESETS } from '../../profile/avatarPresets'
 import {
+  ACCENT_THEMES,
+  normalizeAccentThemeId,
+  type AccentThemeId,
+} from '../../rewards/accentThemes'
+import {
   getGoodieProgress,
   getGoodieStatuses,
   REWARD_GOODIES,
@@ -31,7 +36,7 @@ import { UserAvatar } from './UserAvatar'
 import './ProfileMenu.css'
 
 const FRAME_GOODIES = REWARD_GOODIES.filter((g) => g.id === 'avatar-frame')
-const ACCENT_GOODIES = REWARD_GOODIES.filter((g) => g.id === 'accent-theme')
+const ACCENT_GOODIE = REWARD_GOODIES.find((g) => g.id === 'accent-theme')
 
 type ProfileMenuProps = {
   email: string
@@ -142,7 +147,7 @@ export function ProfileMenu({ email }: ProfileMenuProps) {
     saveRewardsSelection({ avatarFrameId: frameId })
   }
 
-  function selectAccent(accentId: string | null) {
+  function selectAccent(accentId: AccentThemeId | null) {
     saveRewardsSelection({ accentThemeId: accentId })
   }
 
@@ -314,30 +319,32 @@ export function ProfileMenu({ email }: ProfileMenuProps) {
                 <button
                   type="button"
                   className={`pm__pick ${
-                    !selection?.accentThemeId ? 'is-selected' : ''
+                    !normalizeAccentThemeId(selection?.accentThemeId)
+                      ? 'is-selected'
+                      : ''
                   }`}
                   onClick={() => selectAccent(null)}
                 >
-                  <span>Default</span>
+                  <span>Teal (default)</span>
                 </button>
-                {ACCENT_GOODIES.map((accent) => {
-                  const status = unlockedById.get(accent.id)
-                  const unlocked = status?.unlocked ?? false
-                  const selected = selection?.accentThemeId === accent.id
+                {ACCENT_THEMES.map((theme) => {
+                  const unlocked = unlockedById.get('accent-theme')?.unlocked ?? false
+                  const selected =
+                    normalizeAccentThemeId(selection?.accentThemeId) === theme.id
                   return (
                     <button
-                      key={accent.id}
+                      key={theme.id}
                       type="button"
                       disabled={!unlocked}
                       className={`pm__pick ${selected ? 'is-selected' : ''} ${
                         unlocked ? '' : 'is-locked'
                       }`}
-                      onClick={() => unlocked && selectAccent(accent.id)}
+                      onClick={() => unlocked && selectAccent(theme.id)}
                     >
-                      <span aria-hidden="true">{accent.icon}</span>
-                      <span>{accent.name}</span>
-                      {!unlocked ? (
-                        <small>{accent.requirementLabel(progress)}</small>
+                      <span aria-hidden="true">{theme.icon}</span>
+                      <span>{theme.name}</span>
+                      {!unlocked && ACCENT_GOODIE ? (
+                        <small>{ACCENT_GOODIE.requirementLabel(progress)}</small>
                       ) : selected ? (
                         <small>In use ✓</small>
                       ) : null}

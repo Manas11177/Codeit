@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react'
 import {
+  applyAccentTokens,
+  getAccentTheme,
+} from '../../rewards/accentThemes'
+import {
   STATS_UPDATED_EVENT,
   getRewardsSelection,
 } from '../../utils/lessonProgress'
 import './RewardsApply.css'
 
-/** Applies selected accent theme across the app (frame wraps avatars only). */
+/** Applies selected accent theme CSS variables across the app. */
 export function RewardsApply() {
   const [tick, setTick] = useState(0)
 
@@ -18,21 +22,12 @@ export function RewardsApply() {
   }, [])
 
   void tick
-  const accentOn = getRewardsSelection()?.accentThemeId === 'accent-theme'
+  const theme = getAccentTheme(getRewardsSelection()?.accentThemeId)
 
   useEffect(() => {
-    const root = document.documentElement
-    if (accentOn) {
-      root.dataset.accentTheme = 'accent-theme'
-      root.style.setProperty('--cm-accent', '#e11d48')
-      root.style.setProperty('--cm-accent-soft', 'rgba(225, 29, 72, 0.16)')
-    } else {
-      delete root.dataset.accentTheme
-      root.style.removeProperty('--cm-accent')
-      root.style.removeProperty('--cm-accent-soft')
-    }
-    delete root.dataset.rewardFrame
-  }, [accentOn])
+    applyAccentTokens(document.documentElement, theme)
+    delete document.documentElement.dataset.rewardFrame
+  }, [theme])
 
   return null
 }

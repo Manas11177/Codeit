@@ -176,16 +176,16 @@
 }
 
 .pg--dark .pg-bar {
-  fill: #00a99d;
+  fill: var(--cm-accent);
 }
 
 .pg--dark .pg-line {
-  stroke: #5eead4;
+  stroke: var(--cm-accent);
 }
 
 .pg--dark .pg-dot {
   fill: #0f172a;
-  stroke: #5eead4;
+  stroke: var(--cm-accent);
 }
 
 .pg--dark .pg-axis {
@@ -201,7 +201,7 @@
 }
 
 .pg--dark .pg-hbar__fill {
-  background: linear-gradient(90deg, #00a99d, #34d399);
+  background: linear-gradient(90deg, var(--cm-accent), color-mix(in srgb, var(--cm-accent) 55%, white));
 }
 
 .pg--dark .pg-hbar.is-weak .pg-hbar__fill {
@@ -245,7 +245,7 @@
 }
 
 .pg--light .pg-bar {
-  fill: #0d9488;
+  fill: var(--cm-accent);
 }
 
 .pg--light .pg-line {
@@ -270,7 +270,7 @@
 }
 
 .pg--light .pg-hbar__fill {
-  background: linear-gradient(90deg, #0d9488, #059669);
+  background: linear-gradient(90deg, var(--cm-accent), color-mix(in srgb, var(--cm-accent) 55%, white));
 }
 
 .pg--light .pg-hbar.is-weak .pg-hbar__fill {

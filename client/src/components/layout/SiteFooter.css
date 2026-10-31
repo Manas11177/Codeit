@@ -49,6 +49,7 @@
 .site-footer__links button:hover,
 .site-footer__links button:focus-visible {
   opacity: 1;
+  color: var(--cm-accent);
 }
 
 .site-footer__contact,

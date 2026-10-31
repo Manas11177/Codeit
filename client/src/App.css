@@ -60,8 +60,8 @@ body,
 }
 
 .lessons-home-link:hover {
-  border-color: #00a99d;
-  color: #00a99d;
+  border-color: var(--cm-accent);
+  color: var(--cm-accent);
 }
 
 .lessons-progress-link {

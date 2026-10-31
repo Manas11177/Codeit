@@ -1,5 +1,11 @@
-html[data-accent-theme='accent-theme'] .lessons-home-link:hover,
-html[data-accent-theme='accent-theme'] a:hover {
-  border-color: var(--cm-accent, #e11d48);
-  color: var(--cm-accent, #e11d48);
+/*
+ * Intentionally left alone (not driven by --cm-accent):
+ * correct/success greens, wrong/error reds, timer amber/red warnings,
+ * "Needs revision" status chips, medal tier colours, streak flame oranges.
+ */
+
+html[data-accent-theme] .lessons-home-link:hover,
+html[data-accent-theme] a:hover {
+  border-color: var(--cm-accent);
+  color: var(--cm-accent);
 }

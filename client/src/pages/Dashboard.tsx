@@ -123,7 +123,7 @@ function Dashboard() {
             style={{ fontFamily: "'Instrument Serif', serif" }}
           >
             Code
-            <span className={darkMode ? "text-cyan-300" : "text-blue-600"}>
+            <span className={darkMode ? "text-[var(--cm-accent)]" : "text-[var(--cm-accent)]"}>
               Mentor
             </span>
           </h1>
@@ -148,7 +148,7 @@ function Dashboard() {
             <button
               type="button"
               onClick={goToLessons}
-              className="transition-colors hover:text-blue-600"
+              className="transition-colors hover:text-[var(--cm-accent)]"
             >
               Lessons
             </button>
@@ -156,7 +156,7 @@ function Dashboard() {
             <button
               type="button"
               onClick={goToEditor}
-              className="transition-colors hover:text-blue-600"
+              className="transition-colors hover:text-[var(--cm-accent)]"
             >
               Virtual Editor
             </button>
@@ -164,7 +164,7 @@ function Dashboard() {
             <button
               type="button"
               onClick={goToProgress}
-              className="transition-colors hover:text-blue-600"
+              className="transition-colors hover:text-[var(--cm-accent)]"
             >
               Progress
             </button>
@@ -201,7 +201,7 @@ function Dashboard() {
             >
               <span
                 className={`mr-2 ${
-                  darkMode ? "text-cyan-300" : "text-blue-600"
+                  darkMode ? "text-[var(--cm-accent)]" : "text-[var(--cm-accent)]"
                 }`}
               >
                 ●
@@ -295,7 +295,7 @@ function Dashboard() {
 
                 <p
                   className={`mt-1 text-xs ${
-                    darkMode ? "text-cyan-300" : "text-blue-600"
+                    darkMode ? "text-[var(--cm-accent)]" : "text-[var(--cm-accent)]"
                   }`}
                 >
                   {stats.topicsCompleted} topics done
@@ -375,14 +375,14 @@ function Dashboard() {
                 >
                   <div
                     className={`h-full rounded-full ${
-                      darkMode ? "bg-white" : "bg-blue-600"
+                      darkMode ? "bg-white" : "bg-[var(--cm-accent)]"
                     }`}
                     style={{ width: `${stats.progressPct}%` }}
                   />
                 </div>
                 <p
                   className={`mt-2 text-xs ${
-                    darkMode ? "text-cyan-300" : "text-blue-600"
+                    darkMode ? "text-[var(--cm-accent)]" : "text-[var(--cm-accent)]"
                   }`}
                 >
                   Tracker
@@ -447,7 +447,7 @@ function Dashboard() {
             <div className="liquid-glass rounded-3xl p-8 transition duration-500 hover:-translate-y-2">
               <p
                 className={`text-sm font-medium tracking-widest ${
-                  darkMode ? "text-cyan-300" : "text-blue-600"
+                  darkMode ? "text-[var(--cm-accent)]" : "text-[var(--cm-accent)]"
                 }`}
               >
                 CONTINUE LEARNING
@@ -535,7 +535,7 @@ function Dashboard() {
 
               <p
                 className={`text-sm tracking-widest ${
-                  darkMode ? "text-cyan-300" : "text-blue-600"
+                  darkMode ? "text-[var(--cm-accent)]" : "text-[var(--cm-accent)]"
                 }`}
               >
                 YOUR PROGRESS
@@ -588,7 +588,7 @@ function Dashboard() {
               >
                 <div
                   className={`h-full rounded-full ${
-                    darkMode ? "bg-white" : "bg-blue-600"
+                    darkMode ? "bg-white" : "bg-[var(--cm-accent)]"
                   }`}
                   style={{ width: `${stats.progressPct}%` }}
                 />

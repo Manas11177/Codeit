@@ -24,7 +24,7 @@
   pointer-events: none;
   background:
     radial-gradient(ellipse 55% 65% at 10% 0%, rgba(234, 179, 8, 0.16), transparent 60%),
-    radial-gradient(ellipse 45% 55% at 92% 10%, rgba(14, 165, 233, 0.12), transparent 60%);
+    radial-gradient(ellipse 45% 55% at 92% 10%, var(--cm-accent-soft), transparent 60%);
 }
 
 .rw__shell {
@@ -77,7 +77,7 @@
   font-weight: 700;
   letter-spacing: 2.5px;
   text-transform: uppercase;
-  color: var(--cm-accent, #ca8a04);
+  color: var(--cm-accent);
 }
 
 .rw-hero {
@@ -115,7 +115,7 @@
 .rw-empty button {
   border: none;
   background: transparent;
-  color: var(--cm-accent, #ca8a04);
+  color: var(--cm-accent);
   font-weight: 700;
   cursor: pointer;
   padding: 0;
@@ -182,9 +182,9 @@
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
-  border: 1px solid var(--cm-accent, #ca8a04);
-  background: var(--cm-accent, #ca8a04);
-  color: #0f172a;
+  border: 1px solid var(--cm-accent);
+  background: var(--cm-accent);
+  color: var(--cm-accent-contrast);
 }
 
 .rw-card__action.is-active {
@@ -207,7 +207,7 @@
 .rw-bar__fill {
   height: 100%;
   border-radius: inherit;
-  background: var(--cm-accent, #ca8a04);
+  background: var(--cm-accent);
 }
 
 .rw-card__progress {
@@ -250,7 +250,7 @@
   margin-top: 1.5rem;
   padding: 1.4rem 1.5rem;
   border-radius: 16px;
-  border: 2px dashed var(--cm-accent, #ca8a04);
+  border: 2px dashed var(--cm-accent);
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -283,7 +283,7 @@
   margin: 1.2rem 0 0.4rem;
   font-size: clamp(1.6rem, 3vw, 2.1rem);
   font-weight: 800;
-  color: var(--cm-accent, #ca8a04);
+  color: var(--cm-accent);
 }
 
 .rw-cert__date {
@@ -296,6 +296,30 @@
   margin: 1.25rem 0 0;
   font-size: 0.88rem;
   opacity: 0.65;
+}
+
+.rw-accent-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.rw-accent-pick {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+  padding: 0.4rem 0.7rem;
+  cursor: pointer;
+}
+
+.rw-accent-pick.is-selected {
+  border-color: var(--pick, var(--cm-accent));
+  background: var(--cm-accent-soft);
+  box-shadow: inset 0 0 0 1px var(--pick, var(--cm-accent));
 }
 
 @media (min-width: 720px) {

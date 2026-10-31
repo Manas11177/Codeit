@@ -20,7 +20,7 @@
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #7dd3fc;
+  color: var(--cm-accent);
 }
 
 .cc__head h2 {
@@ -136,7 +136,7 @@
 }
 
 .cc-chapter__fill {
-  fill: #7dd3fc;
+  fill: var(--cm-accent);
 }
 
 .cc-chapter__label {
@@ -213,7 +213,7 @@
 }
 
 .cc-legend__swatch--chapter {
-  background: linear-gradient(180deg, #7dd3fc 55%, #1e293b 55%);
+  background: linear-gradient(180deg, var(--cm-accent) 55%, #1e293b 55%);
   border: 1px solid rgba(148, 163, 184, 0.5);
 }
 

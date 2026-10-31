@@ -9,6 +9,11 @@
   --accent-soft: #d9e8f5;
   --brand-red: #c4161c;
   --success: #1f7a4c;
+  /* App brand accent (default = classic teal; RewardsApply overrides when a theme is chosen) */
+  --cm-accent: #00a99d;
+  --cm-accent-rgb: 0, 169, 157;
+  --cm-accent-soft: rgba(0, 169, 157, 0.14);
+  --cm-accent-contrast: #ffffff;
   --font-sans: 'Source Sans 3', 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', 'Consolas', monospace;
   font-family: var(--font-sans);

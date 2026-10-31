@@ -98,8 +98,8 @@
 }
 
 .prefs__primary {
-  color: #fff;
-  background: linear-gradient(135deg, #00a99d, #0ea5e9);
+  color: var(--cm-accent-contrast);
+  background: linear-gradient(135deg, var(--cm-accent), color-mix(in srgb, var(--cm-accent) 45%, white));
   border: 0;
 }
 
@@ -111,7 +111,7 @@
 }
 
 .prefs--dark .prefs__eyebrow {
-  color: #5eead4;
+  color: var(--cm-accent);
 }
 
 .prefs--dark .prefs__sub,
@@ -126,8 +126,8 @@
 }
 
 .prefs--dark .prefs__option.is-selected {
-  border-color: rgba(45, 212, 191, 0.7);
-  background: rgba(45, 212, 191, 0.12);
+  border-color: rgb(var(--cm-accent-rgb) / 0.7);
+  background: rgb(var(--cm-accent-rgb) / 0.12);
 }
 
 .prefs--dark .prefs__ghost,
@@ -160,7 +160,7 @@
 }
 
 .prefs--light .prefs__option.is-selected {
-  border-color: #0d9488;
+  border-color: var(--cm-accent);
   background: #ecfdf5;
 }
 

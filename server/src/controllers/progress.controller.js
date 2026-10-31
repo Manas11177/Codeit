@@ -3,17 +3,7 @@ const ApiResponse = require('../utils/ApiResponse');
 const ApiError = require("../utils/ApiError");
 const pool = require('../config/db');
 
-const getProgress = asyncHandler(async (req, res) => {
-    const result = await pool.query("SELECT * from progress");
-
-    if (!result.rows) {
-        throw new ApiError(500, "Failed to fetch progress");
-    }
-
-    return res
-        .status(200)
-        .json(new ApiResponse(200, result.rows, "progress fetched successfully"));
-});
+const ALLOWED_PROGRESS_STATUSES = new Set(['started', 'in_progress']);
 
 const updateProgress = asyncHandler(async (req, res) => {
     const { lesson_id, status } = req.body;
@@ -21,6 +11,13 @@ const updateProgress = asyncHandler(async (req, res) => {
 
     if (!lesson_id || !status) {
         throw new ApiError(400, "lesson_id and status are required");
+    }
+
+    if (!ALLOWED_PROGRESS_STATUSES.has(status)) {
+        throw new ApiError(
+            400,
+            'Invalid status. Only "started" and "in_progress" are allowed on this endpoint.',
+        );
     }
 
     const existing = await pool.query(
@@ -67,4 +64,4 @@ const getMyProgress = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, result.rows, "Your progress fetched successfully"));
 });
 
-module.exports = { getProgress, updateProgress, getMyProgress};
+module.exports = { updateProgress, getMyProgress };

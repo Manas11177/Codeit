@@ -4,8 +4,15 @@ const ApiResponse = require("../utils/ApiResponse");
 const axios = require("axios");
 
 const JUDGE0_URL = "https://judge0-ce.p.rapidapi.com/submissions";
+const MAX_CODE_BYTES = 20 * 1024;
+const MAX_STDIN_BYTES = 5 * 1024;
+const JUDGE0_TIMEOUT_MS = 30_000;
 
-async function runWithJudge0(code) {
+function byteLength(value) {
+    return Buffer.byteLength(String(value ?? ""), "utf8");
+}
+
+async function runWithJudge0(code, stdin) {
     const apiKey = process.env.JUDGE0_API_KEY?.trim();
     if (!apiKey) {
         throw new ApiError(
@@ -14,12 +21,17 @@ async function runWithJudge0(code) {
         );
     }
 
+    const body = {
+        source_code: code,
+        language_id: 71,
+    };
+    if (stdin) {
+        body.stdin = stdin;
+    }
+
     const submitResponse = await axios.post(
         `${JUDGE0_URL}?base64_encoded=false&wait=true`,
-        {
-            source_code: code,
-            language_id: 71,
-        },
+        body,
         {
             headers: {
                 "X-RapidAPI-Key": apiKey,
@@ -28,7 +40,7 @@ async function runWithJudge0(code) {
                     "judge0-ce.p.rapidapi.com",
                 "Content-Type": "application/json",
             },
-            timeout: 30000,
+            timeout: JUDGE0_TIMEOUT_MS,
         },
     );
 
@@ -53,16 +65,25 @@ async function runWithJudge0(code) {
     };
 }
 
-/** POST /api/execute — run Python via Judge0 (RapidAPI). */
+/** POST /api/execute — run Python via Judge0 (RapidAPI). Auth + size limits required. */
 const runCode = asyncHandler(async (req, res) => {
-    const { code } = req.body;
+    const { code, stdin } = req.body;
 
     if (!code || !String(code).trim()) {
         throw new ApiError(400, "code is required");
     }
 
+    if (byteLength(code) > MAX_CODE_BYTES) {
+        throw new ApiError(400, "Source code is too large (max 20 KB).");
+    }
+
+    const stdinValue = stdin == null ? "" : String(stdin);
+    if (byteLength(stdinValue) > MAX_STDIN_BYTES) {
+        throw new ApiError(400, "Stdin is too large (max 5 KB).");
+    }
+
     try {
-        const result = await runWithJudge0(code);
+        const result = await runWithJudge0(String(code), stdinValue);
         return res.status(200).json(
             new ApiResponse(200, result, "Code executed"),
         );
@@ -72,12 +93,13 @@ const runCode = asyncHandler(async (req, res) => {
         }
 
         const status = err.response?.status;
-        console.error("Judge0 execute failed:", status, err.response?.data || err.message);
+        // Never log request headers or API keys — status only.
+        console.error("Judge0 execute failed:", status || "network/timeout");
 
         if (status === 401 || status === 403) {
             throw new ApiError(
                 502,
-                "Judge0 API key was rejected. Check JUDGE0_API_KEY in server/.env, confirm your RapidAPI subscription, then restart the server.",
+                "Code runner rejected the request. Check server configuration and try again.",
             );
         }
 
@@ -85,6 +107,13 @@ const runCode = asyncHandler(async (req, res) => {
             throw new ApiError(
                 429,
                 "Code runner is rate-limited. Please wait a moment and try again.",
+            );
+        }
+
+        if (err.code === "ECONNABORTED" || err.message?.includes("timeout")) {
+            throw new ApiError(
+                504,
+                "Code execution timed out. Try a simpler program.",
             );
         }
 

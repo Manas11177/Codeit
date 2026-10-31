@@ -258,6 +258,8 @@ export function Rewards() {
                           </button>
                         ))}
                       </div>
+                    ) : goodie.id === 'cat-mode' ? (
+                      <p className="rw-card__hint">Choose Reactions or Companion in your profile menu</p>
                     ) : (
                       <button
                         type="button"

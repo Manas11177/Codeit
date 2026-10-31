@@ -249,6 +249,54 @@
   background: rgba(148, 163, 184, 0.12);
 }
 
+.pm__row-btn:disabled,
+.pm__cat-toggle.is-locked {
+  opacity: 0.5;
+  filter: grayscale(0.75);
+  cursor: not-allowed;
+}
+
+.pm__cat-toggle span:first-child {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.pm__cat-req {
+  font-size: 0.72rem;
+  opacity: 0.75;
+  font-weight: 500;
+}
+
+.pm__switch {
+  width: 2.4rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.35);
+  position: relative;
+  flex: none;
+  transition: background 0.2s ease;
+}
+
+.pm__switch i {
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
+  transition: transform 0.2s ease;
+}
+
+.pm__switch.is-on {
+  background: var(--cm-accent);
+}
+
+.pm__switch.is-on i {
+  transform: translateX(1.05rem);
+}
+
 .pm__logout {
   width: 100%;
   border-radius: 12px;

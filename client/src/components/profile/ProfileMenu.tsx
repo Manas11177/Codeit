@@ -27,7 +27,9 @@ import {
   getProfile,
   getRewardsSelection,
   getTotalCompletedSubtopics,
+  normalizeCatMode,
   saveProfile,
+  type CatModeSetting,
   saveRewardsSelection,
 } from '../../utils/lessonProgress'
 import { flushProgressSync } from '../../sync/progressSync'
@@ -149,6 +151,12 @@ export function ProfileMenu({ email }: ProfileMenuProps) {
 
   function selectAccent(accentId: AccentThemeId | null) {
     saveRewardsSelection({ accentThemeId: accentId })
+  }
+
+  function selectCatMode(mode: CatModeSetting) {
+    const unlocked = unlockedById.get('cat-mode')?.unlocked ?? false
+    if (!unlocked) return
+    saveProfile({ catMode: mode })
   }
 
   function openPreferences() {
@@ -314,6 +322,47 @@ export function ProfileMenu({ email }: ProfileMenuProps) {
                 <span>{darkMode ? 'Dark mode' : 'Light mode'}</span>
                 <span aria-hidden="true">{darkMode ? '☀️ Light' : '🌙 Dark'}</span>
               </button>
+              {(() => {
+                const catUnlocked = unlockedById.get('cat-mode')?.unlocked ?? false
+                const catMode = normalizeCatMode(profile?.catMode)
+                const catGoodie = REWARD_GOODIES.find((g) => g.id === 'cat-mode')
+                const options: { id: CatModeSetting; label: string }[] = [
+                  { id: 'off', label: 'Off' },
+                  { id: 'reactions', label: 'Reactions' },
+                  { id: 'companion', label: 'Companion' },
+                ]
+                return (
+                  <div className={catUnlocked ? '' : 'is-locked'}>
+                    <p className="pm__sublabel">Cat mode</p>
+                    {!catUnlocked && catGoodie ? (
+                      <small className="pm__cat-req">
+                        {catGoodie.requirementLabel(progress)}
+                      </small>
+                    ) : null}
+                    <div
+                      className="pm__pickers"
+                      role="radiogroup"
+                      aria-label="Cat mode"
+                    >
+                      {options.map((option) => (
+                        <button
+                          key={option.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={catMode === option.id}
+                          className={`pm__pick ${
+                            catMode === option.id ? 'is-selected' : ''
+                          } ${catUnlocked ? '' : 'is-locked'}`}
+                          disabled={!catUnlocked}
+                          onClick={() => selectCatMode(option.id)}
+                        >
+                          <span>{option.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })()}
               <p className="pm__sublabel">Accent theme</p>
               <div className="pm__pickers">
                 <button

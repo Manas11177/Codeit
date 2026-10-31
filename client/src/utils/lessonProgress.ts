@@ -74,9 +74,23 @@ export type UserRewards = {
 }
 
 /** Display name + avatar icon; email is never stored here. */
+export type CatModeSetting = 'off' | 'reactions' | 'companion'
+
+/**
+ * Stored cat setting. Older profiles saved `true` / `false`.
+ * `true` is reactions; `false` or missing is off. Companion is explicit.
+ */
+export function normalizeCatMode(raw: unknown): CatModeSetting {
+  if (raw === true || raw === 'reactions') return 'reactions'
+  if (raw === 'companion') return 'companion'
+  return 'off'
+}
+
 export type UserProfile = {
   displayName?: string | null
   avatarId?: string | null
+  /** 'off' | 'reactions' | 'companion'. Legacy boolean true reads as reactions. */
+  catMode?: CatModeSetting | boolean
   updatedAt: string
 }
 
@@ -262,6 +276,7 @@ export function getDisplayName(email?: string | null) {
 export function saveProfile(input: {
   displayName?: string | null
   avatarId?: string | null
+  catMode?: CatModeSetting | boolean
 }) {
   const store = readStore()
   const prev = store.profile
@@ -277,6 +292,10 @@ export function saveProfile(input: {
     displayName,
     avatarId:
       input.avatarId !== undefined ? input.avatarId : (prev?.avatarId ?? null),
+    catMode:
+      input.catMode !== undefined
+        ? normalizeCatMode(input.catMode)
+        : normalizeCatMode(prev?.catMode),
     updatedAt: new Date().toISOString(),
   }
   writeStore(store)

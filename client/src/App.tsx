@@ -32,6 +32,7 @@ import {
   hasPreferencesDecision,
   setProgressUserId,
 } from './utils/lessonProgress'
+import { installCatDevHelper } from './utils/catDev'
 import { installPreferencesDevHelper } from './utils/preferencesDev'
 import { installRewardsDevHelper } from './utils/rewardsDev'
 import './App.css'
@@ -109,6 +110,7 @@ export default function App() {
     initProgressSync()
     installPreferencesDevHelper()
     installRewardsDevHelper()
+    installCatDevHelper()
 
     async function bootWithSync(userId: string | null) {
       setSyncReady(false)

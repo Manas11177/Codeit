@@ -13,7 +13,6 @@ type CelebrationPopupProps = CelebrationContent & {
 }
 
 export function CelebrationPopup({
-  icon,
   title,
   message,
   onClose,
@@ -44,9 +43,6 @@ export function CelebrationPopup({
         <div className="celebration__confetti" aria-hidden="true">
           <span /><span /><span /><span /><span /><span />
         </div>
-        <p className="celebration__icon" aria-hidden="true">
-          {icon}
-        </p>
         <h2 id="celebration-title" className="celebration__title">
           {title}
         </h2>

@@ -1,4 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  notifyCatQuizAnswer,
+  notifyCatQuizFinished,
+  nudgeCatAfterTimerClear,
+} from '../../cat/catEngine'
+import {
+  reportQuestionTimer,
+  setQuestionTimerRunning,
+} from '../../cat/questionTimerGate'
 import { runPlaygroundCode } from '../../api/playground'
 import {
   ACTIVITY_LABELS,
@@ -69,6 +78,13 @@ export function PracticeSession({
     question != null &&
     (question.kind === 'mcq' || question.kind === 'fill' || question.kind === 'order')
 
+  useEffect(() => {
+    const running = Boolean(isTimed && !answered && !finished)
+    setQuestionTimerRunning(running)
+    if (!running) nudgeCatAfterTimerClear()
+    return () => setQuestionTimerRunning(false)
+  }, [isTimed, answered, finished])
+
   function handleAnswer(correct: boolean, usedHint: boolean, fromTimeout = false) {
     if (answeredRef.current || !question) return
     answeredRef.current = true
@@ -88,6 +104,7 @@ export function PracticeSession({
       usedHint,
       source,
     })
+    notifyCatQuizAnswer({ correct, timedOut: fromTimeout })
   }
 
   function handleTimeout() {
@@ -262,6 +279,10 @@ export function QuestionTimer({
     firedRef.current = false
     setRemaining(totalSeconds)
   }, [totalSeconds])
+
+  useEffect(() => {
+    reportQuestionTimer(remaining, !paused)
+  }, [remaining, paused])
 
   useEffect(() => {
     if (paused) return
@@ -753,6 +774,10 @@ function PracticeSummary({
       return acc
     }, {}),
   )
+
+  useEffect(() => {
+    notifyCatQuizFinished(score)
+  }, [score])
 
   useEffect(() => {
     if (score !== 100 || results.length === 0 || perfectFiredRef.current) return

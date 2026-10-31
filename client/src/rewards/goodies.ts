@@ -7,6 +7,7 @@ import {
 
 export type GoodieId =
   | 'avatar-frame'
+  | 'cat-mode'
   | 'accent-theme'
   | 'cheat-sheet'
   | 'voucher'
@@ -48,6 +49,17 @@ export const REWARD_GOODIES: GoodieDef[] = [
     requirementLabel: () => 'Complete 1 topic',
     progress: (ctx) => ({ current: Math.min(ctx.topicsCompleted, 1), target: 1 }),
     isUnlocked: (ctx) => ctx.topicsCompleted >= 1,
+    action: 'use',
+  },
+  {
+    id: 'cat-mode',
+    name: 'Cat mode',
+    icon: '🐱',
+    description:
+      'A corner cat for quiz reactions, or a companion that stays on the page. Pick one in your profile menu.',
+    requirementLabel: () => 'Complete 10 topics',
+    progress: (ctx) => ({ current: Math.min(ctx.topicsCompleted, 10), target: 10 }),
+    isUnlocked: (ctx) => ctx.topicsCompleted >= 10,
     action: 'use',
   },
   {

@@ -8,6 +8,8 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { setCelebrationBusy } from '../cat/celebrationGate'
+import { speakCatCelebration } from '../cat/catEngine'
 import {
   CelebrationPopup,
   type CelebrationContent,
@@ -155,6 +157,8 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
       const id = content.id ?? `toast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
       setQueue((prev) => {
         if (prev.some((item) => item.id === id) || activeIdRef.current === id) return prev
+        // Sync busy flag so cat-mode same-event checks see the queue immediately.
+        setCelebrationBusy(true)
         return [...prev, { id, icon: content.icon, title: content.title, message: content.message }]
       })
     },
@@ -175,6 +179,15 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
     setActive(queue[0])
     setQueue((prev) => prev.slice(1))
   }, [active, queue])
+
+  useEffect(() => {
+    setCelebrationBusy(Boolean(active) || queue.length > 0)
+  }, [active, queue])
+
+  useEffect(() => {
+    if (!active) return
+    speakCatCelebration(active.message)
+  }, [active])
 
   useEffect(() => {
     const userId = getProgressUserId()
@@ -225,7 +238,7 @@ export function CelebrationProvider({ children }: { children: ReactNode }) {
           id,
           icon: MEDAL_EMOJI[achievement.tier],
           title: achievement.title,
-          message: `${achievement.description} ${MEDAL_EMOJI[achievement.tier]} ${achievement.tier} medal unlocked!`,
+          message: `${achievement.description} ${achievement.tier} medal unlocked!`,
         })
       }
 

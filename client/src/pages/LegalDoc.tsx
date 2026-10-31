@@ -68,6 +68,22 @@ const COPY: Record<
         heading: 'Third-party libraries',
         body: 'Open-source and third-party libraries used in CodeMentor keep their own licenses. Those terms continue to apply to those components.',
       },
+      {
+        heading: 'Cat artwork — peek (cat-peek)',
+        body: 'Artist: [artist]. Source: [source link]. Licence: [licence]. Placeholder — replace with the real credit before release.',
+      },
+      {
+        heading: 'Cat artwork — alert (cat-alert)',
+        body: 'Artist: [artist]. Source: [source link]. Licence: [licence]. Placeholder — replace with the real credit before release.',
+      },
+      {
+        heading: 'Cat artwork — sleep (cat-sleep)',
+        body: 'Artist: [artist]. Source: [source link]. Licence: [licence]. Placeholder — replace with the real credit before release.',
+      },
+      {
+        heading: 'Cat artwork — talk (cat-talk)',
+        body: 'Artist: [artist]. Source: [source link]. Licence: [licence]. Placeholder — replace with the real credit before release.',
+      },
     ],
   },
 }

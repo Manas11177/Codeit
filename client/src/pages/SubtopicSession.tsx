@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { notifyCatQuizAnswer, nudgeCatAfterTimerClear } from '../cat/catEngine'
+import { setQuestionTimerRunning } from '../cat/questionTimerGate'
 import { LESSON_DATA } from '../carousel/lessonData'
 import { runPlaygroundCode } from '../api/playground'
 import { CodeEditor } from '../components/editor/CodeEditor'
@@ -42,6 +44,15 @@ type WarmupKind = 'mcq' | 'fill' | 'order'
 type WarmupResult = 'correct' | 'wrong' | 'skipped'
 type PageId = 'learn' | WarmupKind | 'practice'
 type PageStatus = 'done' | 'current' | 'open' | 'locked'
+
+function WarmupTimerBridge({ running }: { running: boolean }) {
+  useEffect(() => {
+    setQuestionTimerRunning(running)
+    if (!running) nudgeCatAfterTimerClear()
+    return () => setQuestionTimerRunning(false)
+  }, [running])
+  return null
+}
 
 const PAGE_META: Record<PageId, { label: string; title: string; icon: string; intro: string }> = {
   learn: {
@@ -205,7 +216,12 @@ export function SubtopicSession({
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  function handleWarmupAnswer(kind: WarmupKind, question: PracticeQuestion, correct: boolean) {
+  function handleWarmupAnswer(
+    kind: WarmupKind,
+    question: PracticeQuestion,
+    correct: boolean,
+    fromTimeout = false,
+  ) {
     if (answers[kind] !== undefined && answers[kind] !== 'skipped') return
     setAnswers((prev) => ({ ...prev, [kind]: correct ? 'correct' : 'wrong' }))
     recordPracticeResult({
@@ -218,6 +234,7 @@ export function SubtopicSession({
       usedHint: false,
       source: 'lesson',
     })
+    notifyCatQuizAnswer({ correct, timedOut: fromTimeout })
   }
 
   async function handleRunExample() {
@@ -313,7 +330,7 @@ export function SubtopicSession({
     const onAnswer = (correct: boolean) => handleWarmupAnswer(kind, question, correct)
     const onTimeout = () => {
       setWarmupTimedOut((prev) => ({ ...prev, [kind]: true }))
-      handleWarmupAnswer(kind, question, false)
+      handleWarmupAnswer(kind, question, false, true)
     }
 
     const view =
@@ -329,6 +346,7 @@ export function SubtopicSession({
 
     return (
       <div key={question.id}>
+        <WarmupTimerBridge running={!settled} />
         <QuestionTimer
           totalSeconds={QUESTION_TIME_LIMITS[kind][question.difficulty]}
           paused={settled}
